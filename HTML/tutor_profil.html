@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mon espace professeur - TutorNova</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700&family=Instrument+Sans:wght@400;500;600&family=Kalam&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/styles.css">
+	<script src="/JS/header.js" defer></script>
+    <script src="/JS/tutor_profil.js" defer></script>
+</head>
+<body>
+<header class="site-header">
+	<div class="container header-inner">
+		<a href="/" class="logo">TutorNova</a>
+		<nav class="main-nav" aria-label="Navigation principale">
+			<a href="/research">Trouver un prof</a>
+			<a href="index.html#methode">Comment ça marche ?</a>
+			<a href="index.html#engagements">Nos engagements</a>
+			<a href="index.html#faq">Questions</a>
+		</nav>
+		<div class="auth-buttons">
+			<a href="/tutor_profil" class="btn-login">Mon espace</a>
+			<a href="/" class="btn-logout">Se deconnecter</a>
+		</div>
+	</div>
+</header>
+<main>
+	<section class="page-head seyes">
+		<div class="container">
+			<div class="page-head-inner profile-head">
+				<span class="avatar big">CM</span>
+				<div>
+					<h1>Camille M.</h1>
+					<p></p>
+					<div class="tags"><span class="status">Profil vérifié</span></div>
+				</div>
+				<a href="/tutor" class="btn-line">Voir ma fiche publique</a>
+			</div>
+		</div>
+	</section>
+
+	<div class="container layout">
+		<aside class="side-nav" aria-label="Mon espace">
+			<a href="#apercu" aria-current="page">Aperçu</a>
+			<a href="#demandes">Demandes</a>
+			<a href="#cours">Prochains cours</a>
+			<a href="#dispos">Disponibilités</a>
+			<a href="#fiche">Ma fiche publique</a>
+			<a href="#mes-cours">Mes Cours</a>
+			<a href="#">Paiements</a>
+		</aside>
+
+		<div class="account">
+			<section id="apercu">
+				<h2>Aperçu</h2>
+				<div class="stats">
+					<div class="stat"><b>4</b>cours cette semaine</div>
+					<div class="stat"><b>212 €</b>gagnés ce mois-ci</div>
+					<div class="stat"><b>4,9</b>sur 5 (126 avis)</div>
+				</div>
+			</section>
+
+			<section id="demandes">
+				<h2>Demandes de réservation</h2>
+				<ul class="lessons">
+					<li><div class="date"><b>15</b>jeu. oct.</div><div class="who"><h3>Léa B., seconde</h3><p>Mathématiques, 18 h à 19 h, en ligne</p></div><a href="#" class="btn-line">Accepter</a><a href="#" class="link-quiet">Refuser</a></li>
+					<li><div class="date"><b>17</b>sam. oct.</div><div class="who"><h3>Hugo T., terminale</h3><p>Préparation au bac, 10 h à 11 h, à domicile</p></div><a href="#" class="btn-line">Accepter</a><a href="#" class="link-quiet">Refuser</a></li>
+				</ul>
+			</section>
+
+			<section id="cours">
+				<h2>Prochains cours</h2>
+				<ul class="lessons">
+					<li><div class="date"><b>14</b>mer. oct.</div><div class="who"><h3>Léa B., seconde</h3><p>17 h 30 à 18 h 30, en ligne</p></div><a href="#" class="btn-line">Rejoindre</a><a href="#" class="link-quiet">Annuler</a></li>
+					<li><div class="date"><b>16</b>ven. oct.</div><div class="who"><h3>Inès R., première</h3><p>16 h à 17 h, à domicile</p></div><a href="#" class="btn-line">Détails</a><a href="#" class="link-quiet">Annuler</a></li>
+				</ul>
+			</section>
+
+			<section id="dispos">
+				<h2>Mes disponibilités</h2>
+				<p class="planner-hint">Cliquez et glissez pour sélectionner vos plages. Glisser sur une plage déjà choisie la retire.</p>
+				<div class="planner" id="planner"></div>
+				<button type="button" class="btn-search" id="save-planner">Enregistrer mes disponibilités</button>
+			</section>
+
+			<section id="fiche">
+				<h2>Ma fiche publique</h2>
+				<form class="form" onsubmit="return false">
+					<label class="full">Présentation<textarea>J'enseigne les mathématiques depuis huit ans, au lycée comme en classe préparatoire.</textarea></label>
+					<button type="submit" class="btn-search">Enregistrer</button>
+				</form>
+			</section>
+
+            <section id="mes-cours">
+                <h2>Mes cours</h2>
+                <ul class="courses"></ul>
+				<p class="empty" id="no-courses" hidden>Vous n'avez pas encore de cours. Cliquez sur « + Ajouter un cours » pour créer le premier.</p>
+
+                <a class="btn-line" id="add-course">+ Ajouter un cours</a>
+
+                <form class="form course-form" id="course-form" hidden>
+                    <h3>Nouveau cours</h3>
+                    <label class="full">Intitulé<input type="text" name="title" placeholder="Ex : Préparation au bac de maths"></label>
+                    <label>Matière<input type="text" name="subject"></label>
+                    <label>
+						Niveau
+						<select name="level">
+							<option value="PRIMAIRE">Primaire</option>
+							<option value="COLLEGE">Collège</option>
+							<option value="LYCEE">Lycée</option>
+							<option value="SUP">Prépa et supérieur</option>
+						</select>
+					</label>
+                    <label class="full">Description<textarea name="bio"></textarea></label>
+                    <label>Tarif horaire (€)<input type="number" name="hourlyRate" value="0"></label>
+                    <label>
+						Durée
+						<select name="duration">
+							<option value="30">30 min</option>
+							<option value="60">1 h</option>
+							<option value="90">1 h 30</option>
+							<option value="120">2 h</option>
+						</select>
+					</label>
+                    <label class="full">
+						Type de cours
+						<select name="mode">
+							<option value="TOUS">En ligne et à domicile</option>
+							<option value="EN_LIGNE">En ligne</option>
+							<option value="DOMICILE">À domicile</option>
+						</select>
+					</label>
+					<p class="form-msg full" id="course-msg" role="alert" hidden></p>
+                    <div class="form-actions">
+						<button type="submit" class="btn-search">Valider</button>
+						<a class="link-quiet" id="course-form-cancel">Annuler</a>
+					</div>
+                </form>
+            </section>
+		</div>
+	</div>
+
+	<dialog class="modal modal-confirm" id="delete-modal" aria-labelledby="delete-title">
+		<h2 id="delete-title">Supprimer ce cours ?</h2>
+		<p class="modal-intro">Vous allez supprimer <strong id="delete-course-name">ce cours</strong>. Cette action est définitive.</p>
+		<p class="form-msg" id="delete-msg" role="alert" hidden></p>
+		<form method="dialog" class="modal-actions">
+			<button type="submit" value="cancel" class="btn-line">Annuler</button>
+			<button type="submit" value="confirm" class="btn-danger">Supprimer</button>
+		</form>
+	</dialog>
+
+	<dialog class="modal" id="onboarding-modal">
+		<span class="note">Dernière étape !</span>
+		<h2>Complétez votre profil</h2>
+		<p class="modal-intro">Ces informations apparaîtront sur votre fiche. Vous pourrez les modifier à tout moment.</p>
+		<form class="form" id="tutor-onboarding-form">
+			<label class="full">Matières enseignées<input type="text" name="subjects" placeholder="Ex : Mathématiques, Physique-Chimie" required></label>
+			<fieldset class="choice wrap full"><legend>Niveaux</legend>
+				<label><input type="checkbox" name="levels" value="primary"> Primaire</label>
+				<label><input type="checkbox" name="levels" value="middle"> Collège</label>
+				<label><input type="checkbox" name="levels" value="high"> Lycée</label>
+				<label><input type="checkbox" name="levels" value="higher"> Prépa et supérieur</label>
+			</fieldset>
+			<fieldset class="choice wrap full"><legend>Type de cours</legend>
+				<label><input type="radio" name="mode" value="online" checked> En ligne</label>
+				<label><input type="radio" name="mode" value="home"> À domicile</label>
+				<label><input type="radio" name="mode" value="both"> Les deux</label>
+			</fieldset>
+			<label>Tarif horaire (€)<input type="number" name="hourly-rate" min="10" required></label>
+			<label class="full">Présentation<textarea name="bio" placeholder="Votre parcours, votre méthode…" required></textarea></label>
+			<p class="form-msg full" id="form-msg" role="alert" hidden></p>
+			<div class="form-actions">
+				<button type="submit" class="btn-search">Terminer</button>
+				<a href="#" class="link-quiet" id="onboarding-later">Plus tard</a>
+			</div>
+		</form>
+	</dialog>
+</main>
+<footer class="site-footer"><div class="container copy" style="border:0;margin:0">&copy; 2026 TutorNova. Tous droits réservés.</div></footer>
+</body>
+</html>

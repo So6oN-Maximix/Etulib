@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Créer un compte - TutorNova</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700&family=Instrument+Sans:wght@400;500;600&family=Kalam&display=swap" rel="stylesheet">
+	<link rel="stylesheet" href="/styles.css">
+	<script src="/JS/header.js" defer></script>
+	<script src="/JS/signup.js" defer></script>
+</head>
+<body>
+<header class="site-header">
+	<div class="container header-inner">
+		<a href="/" class="logo">TutorNova</a>
+		<nav class="main-nav" aria-label="Navigation principale">
+			<a href="/research">Trouver un prof</a>
+			<a href="index.html#methode">Comment ça marche ?</a>
+			<a href="index.html#engagements">Nos engagements</a>
+			<a href="index.html#faq">Questions</a>
+		</nav>
+		<div class="auth-buttons">
+			<a href="/login" class="btn-login">Se connecter</a>
+			<a href="/signup" class="btn-signup">Créer un compte</a>
+		</div>
+	</div>
+</header>
+<main>
+	<section class="auth seyes">
+		<div class="container">
+			<div class="auth-card wide">
+				<span class="note">Bienvenue !</span>
+				<h1>Créer un compte</h1>
+				<form class="form" id="signup-form">
+					<fieldset class="choice full"><legend>Je suis</legend>
+						<label><input type="radio" value="parent" name="role" checked> Parent</label>
+						<label><input type="radio" value="student" name="role"> Élève</label>
+						<label><input type="radio" value="tutor" name="role"> Tuteur</label>
+					</fieldset>
+					<label>Prénom<input type="text" autocomplete="given-name" name="first-name" required></label>
+					<label>Nom<input type="text" autocomplete="family-name" name="last-name" required></label>
+					<label class="full">Adresse e-mail<input type="email" autocomplete="email" name="email" required></label>
+					<label class="full">Mot de passe
+						<span class="pw">
+							<input type="password" minlength="8" autocomplete="new-password" name="password" required>
+							<button type="button" class="pw-toggle" aria-label="Afficher le mot de passe" aria-pressed="false">
+								<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/><path class="slash" d="M3 3l18 18"/></svg>
+							</button>
+						</span>
+					</label>
+					<div class="auth-row full">
+						<label><input type="checkbox" required> J'accepte les <a href="#">conditions d'utilisation</a></label>
+					</div>
+					<p class="form-msg full" id="form-msg" role="alert" hidden></p>
+					<button type="submit" class="btn-search">Créer mon compte</button>
+				</form>
+				<p class="auth-foot">Déjà un compte ? <a href="/login">Se connecter</a></p>
+			</div>
+		</div>
+	</section>
+</main>
+<footer class="site-footer"><div class="container copy" style="border:0;margin:0">&copy; 2026 TutorNova. Tous droits réservés.</div></footer>
+</body>
+</html>

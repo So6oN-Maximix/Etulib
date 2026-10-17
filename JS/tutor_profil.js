@@ -1,0 +1,277 @@
+function updateHeader(tutorData) {
+    const docHeader = document.querySelector(".page-head-inner");
+    docHeader.querySelector(".avatar").textContent = `${tutorData.firstName[0]}${tutorData.lastName[0]}`.toUpperCase();
+    docHeader.querySelector("h1").textContent = `${tutorData.firstName} ${tutorData.lastName.toUpperCase()}`;
+    const role = getSubjects().length > 0 ? `Professeur de ${getSubjects().join(", ")}` : "Professeur";
+    docHeader.querySelector("p").textContent = `${role}. Membre depuis ${new Date(tutorData.createdAt).toLocaleDateString("fr-FR", { month: "long", year: "numeric" })}.`;
+}
+
+function getSubjects() {
+    let subjects = [];
+    COURSES.forEach(course => {
+        if (!subjects.includes(course.subject.toLowerCase())) subjects.push(course.subject.toLowerCase());
+    });
+    return subjects.map(sub => sub.charAt(0).toUpperCase() + sub.slice(1));
+}
+
+async function getCourses() {
+    try {
+        const tutorCoursesRes = await fetch("/api/tutor/courses", { method: "GET" });
+        const tutorCourses = await tutorCoursesRes.json();
+        return tutorCourses.courses;
+    } catch (error) { console.error(error); }
+}
+
+function loadCourses() {
+    const coursesList = document.querySelector("ul.courses");
+    coursesList.innerHTML = "";
+    document.getElementById("no-courses").hidden = COURSES.length > 0;
+    COURSES.forEach(course => addCourse(course, coursesList));
+}
+
+function formatTime(minutes) {
+    if (minutes < 60) return `${minutes}min`;
+    return `${Math.floor(minutes / 60)}h${(minutes % 60).toString().padStart(2, "0")}`;
+}
+
+function addCourse(course, selector) {
+    const globalPoint = document.createElement("li");
+
+    const courseDescDiv = document.createElement("div");
+    courseDescDiv.classList.add("who");
+    const subjectElem = document.createElement("h3");
+    subjectElem.textContent = course.title;
+    const courseDescElem = document.createElement("p");
+    courseDescElem.textContent = `${course.bio}. ${formatTime(course.duration)}, ${course.mode === "TOUS" ? "en ligne ou à domicile." : course.mode.toLowerCase().replace("_", " ")}`;
+    courseDescDiv.appendChild(subjectElem);
+    courseDescDiv.appendChild(courseDescElem);
+
+    const ratingPriceDiv = document.createElement("div");
+    ratingPriceDiv.classList.add("price");
+    ratingPriceDiv.innerHTML = `${course.hourlyRate} €<small>/heure</small>`;
+
+    const actionsDiv = document.createElement("div");
+    actionsDiv.classList.add("course-actions");
+    const modifyLink = document.createElement("a");
+    modifyLink.classList.add("btn-line");
+    modifyLink.textContent = "Modifier";
+    modifyLink.onclick = () => {
+        courseForm.setAttribute("data-id", course.id);
+        const formElem = courseForm.elements;
+        formElem.title.value = course.title;
+        formElem.subject.value = course.subject;
+        formElem.level.value = course.level;
+        formElem.bio.value = course.bio;
+        formElem.hourlyRate.value = course.hourlyRate;
+        formElem.duration.value = course.duration;
+        formElem.mode.value = course.mode;
+        courseForm.hidden = false;
+    };
+    const deleteLink = document.createElement("a");
+    deleteLink.classList.add("link-quiet");
+    deleteLink.textContent = "Supprimer";
+    deleteLink.onclick = () => {
+        confirmCourseDeleteModal.showModal();
+        document.getElementById("delete-course-name").textContent = course.title;
+        document.getElementById("delete-course-name").setAttribute("data-id", course.id);
+    };
+    actionsDiv.appendChild(modifyLink);
+    actionsDiv.appendChild(deleteLink);
+
+    globalPoint.appendChild(courseDescDiv);
+    globalPoint.appendChild(ratingPriceDiv);
+    globalPoint.appendChild(actionsDiv);
+    selector.appendChild(globalPoint);
+}
+
+function loadDispos() {
+	const root = document.getElementById("planner");
+	const DAYS = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
+	const START = 8, END = 21;
+	const SLOTS = (END - START) * 2;
+
+	const el = (tag, cls, text) => {
+		const e = document.createElement(tag);
+		if (cls) e.className = cls;
+		if (text) e.textContent = text;
+		return e;
+	};
+
+	root.append(el("div"), ...DAYS.map(d => el("div", "day", d)));
+	for (let s = 0; s < SLOTS; s++) {
+		root.append(el("div", "hour", s % 2 === 0 ? (START + s / 2) + " h" : ""));
+		for (let d = 0; d < 7; d++) {
+			const c = el("div", "cell" + (s % 2 === 0 ? " hr" : ""));
+			c.dataset.d = d;
+			c.dataset.s = s;
+			root.append(c);
+		}
+	}
+
+    const cells = [...root.querySelectorAll(".cell")];
+	let selected = new Set();
+	let drag = null;
+	const key = (d, s) => d + "-" + s;
+
+	const paint = () => cells.forEach(c => c.classList.toggle("on", selected.has(key(c.dataset.d, c.dataset.s))));
+
+	const cellAt = (x, y) => {
+		const e = document.elementFromPoint(x, y);
+		return e && e.classList.contains("cell") ? e : null;
+	};
+
+	function update(c) {
+		const [d1, d2] = [drag.d, +c.dataset.d].sort((a, b) => a - b);
+		const [s1, s2] = [drag.s, +c.dataset.s].sort((a, b) => a - b);
+		selected = new Set(drag.base);
+		for (let d = d1; d <= d2; d++)
+			for (let s = s1; s <= s2; s++)
+				drag.add ? selected.add(key(d, s)) : selected.delete(key(d, s));
+		paint();
+	}
+
+	root.addEventListener("pointerdown", e => {
+		const c = cellAt(e.clientX, e.clientY);
+		if (!c) return;
+		e.preventDefault();
+		drag = { d: +c.dataset.d, s: +c.dataset.s, base: new Set(selected), add: !selected.has(key(c.dataset.d, c.dataset.s)) };
+		update(c);
+	});
+
+	window.addEventListener("pointermove", e => {
+		if (!drag) return;
+		const c = cellAt(e.clientX, e.clientY);
+		if (c) update(c);
+	});
+
+	["pointerup", "pointercancel"].forEach(t => window.addEventListener(t, () => { drag = null; }));
+}
+
+function initScrollSpy() {
+	const items = [...document.querySelectorAll('.side-nav a[href^="#"]')]
+		.filter(a => a.hash.length > 1)
+		.map(a => ({ link: a, section: document.querySelector(a.hash) }))
+		.filter(i => i.section);
+	const offset = 120;
+
+	function update() {
+		let current = items[0];
+		for (const i of items) if (i.section.getBoundingClientRect().top <= offset) current = i;
+		if (window.innerHeight + window.scrollY >= document.body.scrollHeight - 2) current = items[items.length - 1];
+		items.forEach(i => i.link.removeAttribute("aria-current"));
+		current.link.setAttribute("aria-current", "page");
+	}
+
+	let ticking = false;
+	window.addEventListener("scroll", () => {
+		if (ticking) return;
+		ticking = true;
+		requestAnimationFrame(() => { update(); ticking = false; });
+	}, { passive: true });
+	window.addEventListener("resize", update);
+	update();
+}
+
+const addCourseBtn = document.getElementById("add-course");
+const courseForm = document.getElementById("course-form");
+const courseFormCancel = document.getElementById("course-form-cancel");
+
+const onboardingModal = document.getElementById("onboarding-modal");
+const confirmCourseDeleteModal = document.getElementById("delete-modal");
+const deleteModal = document.getElementById("delete-modal");
+
+let COURSES = [];
+
+if (new URLSearchParams(location.search).has("welcome")) {
+	onboardingModal.showModal();
+	history.replaceState(null, "", "/tutor_profil");
+}
+document.getElementById("onboarding-later").addEventListener("click", e => { e.preventDefault(); onboardingModal.close(); });
+
+document.addEventListener("DOMContentLoaded", async () => {
+    const getTutorInfo = await fetch("/api/auth/me");
+    const tutorData = await getTutorInfo.json();
+    COURSES = await getCourses();
+    updateHeader(tutorData.user);
+    loadCourses();
+    loadDispos();
+    initScrollSpy();
+    addCourseBtn.onclick = () => {
+        courseForm.hidden = !courseForm.hidden;
+        courseForm.removeAttribute("data-id");
+    }
+    courseFormCancel.onclick = () => {
+        courseForm.hidden = true;
+        courseForm.reset();
+        courseForm.removeAttribute("data-id");
+    }
+});
+
+courseForm.addEventListener("submit", async event => {
+    event.preventDefault();
+    const dataForm = Object.fromEntries(new FormData(courseForm));
+    const modifiedCourseId = courseForm.getAttribute("data-id");
+    const msg = document.getElementById("course-msg");
+    msg.hidden = true;
+    try {
+        if (!modifiedCourseId) {
+            const sendCourse = await fetch("/api/tutor/add-course", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify(dataForm)
+            });
+            if (!sendCourse.ok) {
+                const data = await sendCourse.json().catch(() => ({}));
+                msg.textContent = data.error || "Impossible d'ajouter le cours, réessayez.";
+                msg.hidden = false;
+                return;
+            }
+            const { addCourseToDB } = await sendCourse.json();
+            COURSES.push(addCourseToDB);
+        } else {
+            const modifyCourse = await fetch(`/api/tutor/update-course/${modifiedCourseId}`, {
+                method: "PATCH",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify(dataForm)
+            });
+            if (!modifyCourse.ok) {
+                const data = await modifyCourse.json().catch(() => ({}));
+                msg.textContent = data.error || "Impossible de modifier le cours, réessayez.";
+                msg.hidden = false;
+                return;
+            }
+            const { course } = await modifyCourse.json();
+            COURSES = COURSES.map(c => c.id === course.id ? course : c);
+        }
+        loadCourses();
+        courseForm.reset();
+        courseForm.removeAttribute("data-id");
+        courseForm.hidden = true;
+    } catch (error) {
+        msg.textContent = "Erreur serveur, réessayez plus tard.";
+        msg.hidden = false;
+    }
+});
+
+document.querySelector('#delete-modal button[value="confirm"]').addEventListener("click", async event => {
+	event.preventDefault();
+    const deleteMsg = document.getElementById("delete-msg");
+	deleteMsg.hidden = true;
+	try {
+        const idCourseToDelete = document.getElementById("delete-course-name").getAttribute("data-id");
+		const res = await fetch(`/api/tutor/delete-course/${idCourseToDelete}`, { method: "DELETE" });
+		if (!res.ok) {
+			const data = await res.json().catch(() => ({}));
+			deleteMsg.textContent = data.error || "Impossible de supprimer le cours, réessayez.";
+			deleteMsg.hidden = false;
+			return;
+		}
+        COURSES = COURSES.filter(course => course.id != parseInt(idCourseToDelete));
+        loadCourses();
+		deleteModal.close();
+        document.getElementById("delete-course-name").removeAttribute("data-id");
+	} catch (error) {
+		deleteMsg.textContent = "Erreur serveur, réessayez plus tard.";
+		deleteMsg.hidden = false;
+	}
+});

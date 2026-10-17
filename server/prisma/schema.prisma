@@ -1,0 +1,80 @@
+generator client {
+	provider      = "prisma-client-js"
+	binaryTargets = ["native", "debian-openssl-1.0.x", "windows"]
+}
+
+datasource db {
+	provider = "postgresql"
+	url      = env("DATABASE_URL")
+}
+
+model User {
+	id           Int      @id @default(autoincrement())
+	email        String   @unique
+	passwordHash String
+	firstName    String
+	lastName     String
+	role         Role     @default(STUDENT)
+	tutor        TutorProfile?
+	lessons      Lesson[] @relation("student")
+	createdAt	 DateTime @default(now())
+	updatedAt    DateTime @updatedAt
+}
+
+model TutorProfile {
+	id         Int      @id @default(autoincrement())
+	user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+	userId     Int      @unique
+	bio        String?
+	subjects   Course[]
+	lessons    Lesson[]
+	createdAt  DateTime @default(now())
+	updatedAt  DateTime @updatedAt
+}
+
+model Course {
+	id         Int            @id @default(autoincrement())
+	tutor      TutorProfile   @relation(fields: [tutorId], references: [id], onDelete: Cascade)
+	tutorId    Int
+	title      String
+	subject    String
+	level      Level          @default(LYCEE)
+	bio        String
+	hourlyRate Int
+	duration   Int
+	mode       Mode           @default(DOMICILE)
+	createdAt  DateTime       @default(now())
+
+	@@index([tutorId])
+}
+
+model Lesson {
+	id        Int          @id @default(autoincrement())
+	student   User         @relation("student", fields: [studentId], references: [id], onDelete: Cascade)
+	studentId Int
+	tutor     TutorProfile @relation(fields: [tutorId], references: [id], onDelete: Cascade)
+	tutorId   Int
+	startsAt  DateTime
+	mode      Mode         @default(DOMICILE)
+	rating    Int?
+	review    String?
+}
+
+enum Role {
+	STUDENT
+	PARENT
+	TUTOR
+}
+
+enum Mode {
+	DOMICILE
+	EN_LIGNE
+	TOUS
+}
+
+enum Level {
+	PRIMAIRE
+	COLLEGE
+	LYCEE
+	SUP
+}

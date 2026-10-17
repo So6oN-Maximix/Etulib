@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Mon espace - TutorNova</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700&family=Instrument+Sans:wght@400;500;600&family=Kalam&display=swap" rel="stylesheet">
+	<link rel="stylesheet" href="/styles.css">
+	<script src="/JS/header.js" defer></script>
+	<script src="/JS/student_profil.js" defer></script>
+</head>
+<body>
+<header class="site-header">
+	<div class="container header-inner">
+		<a href="/" class="logo">TutorNova</a>
+		<nav class="main-nav" aria-label="Navigation principale">
+			<a href="/research">Trouver un prof</a>
+			<a href="index.html#methode">Comment ça marche ?</a>
+			<a href="index.html#engagements">Nos engagements</a>
+			<a href="index.html#faq">Questions</a>
+		</nav>
+		<div class="auth-buttons">
+			<a href="/student_profil" class="btn-login">Mon espace</a>
+			<a href="/" class="btn-logout">Se deconnecter</a>
+		</div>
+	</div>
+</header>
+<main>
+	<section class="page-head seyes">
+		<div class="container">
+			<div class="page-head-inner profile-head">
+				<span class="avatar big">NB</span>
+				<div><h1>Nadia Benali</h1><p>Parent de Léa, élève de seconde. Membre depuis septembre 2026.</p></div>
+				<a href="#infos" class="btn-line">Modifier mes informations</a>
+			</div>
+		</div>
+	</section>
+
+	<div class="container layout">
+		<aside class="side-nav" aria-label="Mon espace">
+			<a href="#cours" aria-current="page">Mes cours</a>
+			<a href="#comptes-rendus">Comptes rendus</a>
+			<a href="#favoris">Mes professeurs</a>
+			<a href="#infos">Mes informations</a>
+			<a href="#">Paiements et factures</a>
+		</aside>
+
+		<div class="account">
+			<section id="cours">
+				<h2>Prochains cours</h2>
+				<ul class="lessons">
+					<li><div class="date"><b>14</b>mer. oct.</div><div class="who"><h3>Mathématiques avec Camille M.</h3><p>17 h 30 à 18 h 30, en ligne</p></div><a href="#" class="btn-line">Rejoindre</a><a href="#" class="link-quiet">Annuler</a></li>
+					<li><div class="date"><b>17</b>sam. oct.</div><div class="who"><h3>Anglais avec Yanis B.</h3><p>10 h à 11 h, en ligne</p></div><a href="#" class="btn-line">Détails</a><a href="#" class="link-quiet">Annuler</a></li>
+				</ul>
+			</section>
+
+			<section id="comptes-rendus">
+				<h2>Dernier compte rendu</h2>
+				<figure class="quote small">
+					<blockquote>Léa a bien progressé sur les fonctions affines. On reprend les équations du second degré mercredi, avec deux exercices à préparer.</blockquote>
+					<figcaption>Camille M., séance du 8 octobre</figcaption>
+					<span class="note" aria-hidden="true">Bon travail !</span>
+				</figure>
+			</section>
+
+			<section id="favoris">
+				<h2>Mes professeurs</h2>
+				<ul class="tutors compact">
+					<li><span class="avatar">CM</span><div class="who"><h3>Camille M.</h3><p>Mathématiques, 6 séances</p></div><a href="#" class="btn-line">Réserver</a></li>
+					<li><span class="avatar">YB</span><div class="who"><h3>Yanis B.</h3><p>Anglais, 3 séances</p></div><a href="#" class="btn-line">Réserver</a></li>
+				</ul>
+			</section>
+
+			<section id="infos">
+				<h2>Mes informations</h2>
+				<form class="form" onsubmit="return false">
+					<label>Prénom<input type="text" value="Nadia"></label>
+					<label>Nom<input type="text" value="Benali"></label>
+					<label>Adresse e-mail<input type="email" value="nadia.benali@exemple.fr"></label>
+					<label>Téléphone<input type="tel" value="06 12 34 56 78"></label>
+					<label>Ville<input type="text" value="Saint-Étienne"></label>
+					<label>Niveau de l'élève<select><option>Seconde</option><option>Première</option><option>Terminale</option></select></label>
+					<button type="submit" class="btn-search">Enregistrer</button>
+				</form>
+			</section>
+		</div>
+	</div>
+</main>
+<footer class="site-footer">
+	<div class="container copy" style="border:0;margin:0">&copy; 2026 TutorNova. Tous droits réservés.</div>
+</footer>
+</body>
+</html>

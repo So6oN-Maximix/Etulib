@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Trouver un professeur - TutorNova</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700&family=Instrument+Sans:wght@400;500;600&family=Kalam&display=swap" rel="stylesheet">
+	<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+	<link rel="stylesheet" href="/styles.css">
+	<script src="/JS/header.js" defer></script>
+	<script src="/JS/research.js" defer></script>
+</head>
+<body>
+<header class="site-header">
+	<div class="container header-inner">
+		<a href="/" class="logo">TutorNova</a>
+		<nav class="main-nav" aria-label="Navigation principale">
+			<a href="/research">Trouver un prof</a>
+			<a href="index.html#methode">Comment ça marche ?</a>
+			<a href="index.html#engagements">Nos engagements</a>
+			<a href="index.html#faq">Questions</a>
+		</nav>
+		<div class="auth-buttons">
+			<a href="/login" class="btn-login">Se connecter</a>
+			<a href="/signup" class="btn-signup">Créer un compte</a>
+		</div>
+	</div>
+</header>
+<main>
+	<section class="page-head seyes">
+		<div class="container">
+			<div class="page-head-inner">
+				<h1>Trouver un professeur</h1>
+				<form class="search-box" role="search" onsubmit="return false">
+					<label class="field"><span>Matière</span><input type="text" value="Mathématiques"></label>
+					<label class="field"><span>Lieu</span><input type="text" value="Saint-Étienne"></label>
+					<button type="submit" class="btn-search">Rechercher</button>
+				</form>
+			</div>
+		</div>
+	</section>
+
+	<div class="container layout">
+		<aside class="filters" aria-label="Filtres">
+			<div class="map-card" id="map-card">
+				<div id="map-mini" class="map-mini"></div>
+				<button type="button" class="btn-map" id="open-map">Afficher sur la carte</button>
+			</div>
+			<fieldset><legend>Niveau</legend>
+				<label><input type="checkbox"> Primaire</label>
+				<label><input type="checkbox"> Collège</label>
+				<label><input type="checkbox" checked> Lycée</label>
+				<label><input type="checkbox"> Prépa et supérieur</label>
+			</fieldset>
+			<fieldset><legend>Type de cours</legend>
+				<label><input type="radio" name="mode" checked> Tous</label>
+				<label><input type="radio" name="mode"> En ligne</label>
+				<label><input type="radio" name="mode"> À domicile</label>
+			</fieldset>
+			<fieldset><legend>Tarif maximum</legend>
+				<input type="range" min="15" max="60" value="40" aria-label="Tarif maximum" oninput="document.getElementById('pv').textContent=this.value+' €/h'">
+				<output id="pv">40 €/h</output>
+			</fieldset>
+			<fieldset><legend>Note minimale</legend>
+				<label><input type="radio" name="note" checked> Toutes</label>
+				<label><input type="radio" name="note"> 4,5 et plus</label>
+			</fieldset>
+		</aside>
+
+		<section class="results" aria-live="polite">
+			<div class="results-bar">
+				<p><b>47 professeurs</b> de mathématiques pour le lycée</p>
+				<label>Trier par
+					<select><option>Pertinence</option><option>Prix croissant</option><option>Meilleure note</option><option>Disponibilité</option></select>
+				</label>
+			</div>
+			<ul class="tutors">
+				<li>
+					<span class="avatar">CM</span>
+					<div class="who"><h3>Camille M.</h3><p>Agrégée, 8 ans d'expérience. Spécialité maths, terminale et prépa.</p>
+						<div class="tags"><span>En ligne</span><span>À domicile</span><span class="free">Libre demain 17 h 30</span></div></div>
+					<div class="meta"><span class="stars" style="--r:4.9" role="img" aria-label="Note de 4,9 sur 5"></span><span><b>4,9</b> <small>(126 avis)</small></span></div>
+					<div class="price">32 €<small>/heure</small></div>
+					<a href="/tutor" class="btn-line">Voir les créneaux</a>
+				</li>
+				<li>
+					<span class="avatar">TR</span>
+					<div class="who"><h3>Thomas R.</h3><p>Ingénieur et professeur particulier. Méthode axée sur les exercices types du bac.</p>
+						<div class="tags"><span>En ligne</span><span class="free">Libre jeudi 18 h</span></div></div>
+					<div class="meta"><span class="stars" style="--r:4.8" role="img" aria-label="Note de 4,8 sur 5"></span><span><b>4,8</b> <small>(73 avis)</small></span></div>
+					<div class="price">28 €<small>/heure</small></div>
+					<a href="#" class="btn-line">Voir les créneaux</a>
+				</li>
+				<li>
+					<span class="avatar">IK</span>
+					<div class="who"><h3>Inès K.</h3><p>Étudiante en master de mathématiques. Remise à niveau, seconde et première.</p>
+						<div class="tags"><span>À domicile</span><span class="free">Libre samedi 10 h</span></div></div>
+					<div class="meta"><span class="stars" style="--r:4.7" role="img" aria-label="Note de 4,7 sur 5"></span><span><b>4,7</b> <small>(38 avis)</small></span></div>
+					<div class="price">22 €<small>/heure</small></div>
+					<a href="#" class="btn-line">Voir les créneaux</a>
+				</li>
+				<li>
+					<span class="avatar">PD</span>
+					<div class="who"><h3>Paul D.</h3><p>Professeur certifié en poste. Accompagnement vers la spécialité maths et le supérieur.</p>
+						<div class="tags"><span>En ligne</span><span>À domicile</span></div></div>
+					<div class="meta"><span class="stars" style="--r:3.5" role="img" aria-label="Note de 3,5 sur 5"></span><span><b>3,5</b> <small>(204 avis)</small></span></div>
+					<div class="price">38 €<small>/heure</small></div>
+					<a href="#" class="btn-line">Voir les créneaux</a>
+				</li>
+			</ul>
+			<nav class="pager" aria-label="Pagination"><a href="#" aria-current="page">1</a><a href="#">2</a><a href="#">3</a><a href="#">Suivant</a></nav>
+		</section>
+	</div>
+</main>
+<div class="map-modal" id="map-modal" role="dialog" aria-label="Carte des professeurs" hidden>
+	<div class="map-modal-bar"><strong>Professeurs à Saint-Étienne</strong><button type="button" class="btn-line" id="close-map">Retour à la liste</button></div>
+	<div class="map-wrap">
+	<div id="map" class="map"></div>
+		<aside class="tutor-panel" id="tutor-panel" hidden>
+			<button type="button" class="tp-close" id="tp-close" aria-label="Fermer">×</button>
+			<span class="avatar" id="tp-avatar"></span>
+			<h3 id="tp-name"></h3>
+			<p id="tp-sub"></p>
+			<div class="meta"><span class="stars" id="tp-stars" role="img"></span><span id="tp-rating"></span></div>
+			<div class="price" id="tp-price"></div>
+			<p id="tp-text"></p>
+			<a href="#" class="btn-line" id="tp-link">Voir le profil</a>
+		</aside>
+	</div>
+</div>
+<footer class="site-footer"><div class="container copy" style="border:0;margin:0">&copy; 2026 TutorNova. Tous droits réservés.</div></footer>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</body>
+</html>
