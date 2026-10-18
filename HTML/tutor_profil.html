@@ -34,7 +34,8 @@
 				<span class="avatar big">CM</span>
 				<div>
 					<h1>Camille M.</h1>
-					<p></p>
+					<p id="tutor-role"></p>
+					<p id="member-since"></p>
 					<div class="tags"><span class="status">Profil vérifié</span></div>
 				</div>
 				<a href="/tutor" class="btn-line">Voir ma fiche publique</a>
@@ -49,6 +50,7 @@
 			<a href="#cours">Prochains cours</a>
 			<a href="#dispos">Disponibilités</a>
 			<a href="#fiche">Ma fiche publique</a>
+			<a href="#parcours">Mon parcours</a>
 			<a href="#mes-cours">Mes Cours</a>
 			<a href="#">Paiements</a>
 		</aside>
@@ -88,9 +90,35 @@
 
 			<section id="fiche">
 				<h2>Ma fiche publique</h2>
-				<form class="form" onsubmit="return false">
-					<label class="full">Présentation<textarea>J'enseigne les mathématiques depuis huit ans, au lycée comme en classe préparatoire.</textarea></label>
+				<form class="form">
+					<label class="full">Présentation<textarea name="bio">J'enseigne les mathématiques depuis huit ans, au lycée comme en classe préparatoire.</textarea></label>
 					<button type="submit" class="btn-search">Enregistrer</button>
+				</form>
+			</section>
+
+			<section id="parcours">
+				<h2>Mon parcours</h2>
+				<ul class="courses" id="path-list">
+					<li>
+						<div class="who"><h3>Professeure agrégée de mathématiques</h3><p>Lycée Fauriel, Saint-Étienne. Depuis 2021.</p></div>
+						<div class="course-actions"><a class="btn-line">Modifier</a><a class="link-quiet">Supprimer</a></div>
+					</li>
+				</ul>
+				<p class="empty" id="no-path" hidden>Vous n'avez pas encore renseigné votre parcours. Cliquez sur « + Ajouter une étape » pour commencer.</p>
+
+				<a class="btn-line" id="add-path">+ Ajouter une étape</a>
+
+				<form class="form course-form" id="path-form" hidden>
+					<h3>Nouvelle étape</h3>
+					<label class="full">Intitulé<input type="text" name="title" placeholder="Ex : Agrégation externe de mathématiques"></label>
+					<label class="full">Établissement ou lieu<input type="text" name="location" placeholder="Ex : Lycée Fauriel, Saint-Étienne"></label>
+					<label>Année de début<input type="number" name="startYear" min="1950" max="2100"></label>
+					<label>Année de fin<input type="number" name="endYear" min="1950" max="2100" placeholder="Vide si en cours"></label>
+					<p class="form-msg full" id="path-msg" role="alert" hidden></p>
+					<div class="form-actions">
+						<button type="submit" class="btn-search">Valider</button>
+						<a class="link-quiet" id="path-form-cancel">Annuler</a>
+					</div>
 				</form>
 			</section>
 
@@ -145,7 +173,7 @@
 
 	<dialog class="modal modal-confirm" id="delete-modal" aria-labelledby="delete-title">
 		<h2 id="delete-title">Supprimer ce cours ?</h2>
-		<p class="modal-intro">Vous allez supprimer <strong id="delete-course-name">ce cours</strong>. Cette action est définitive.</p>
+		<p class="modal-intro">Vous allez supprimer <strong id="delete-name">ce cours</strong>. Cette action est définitive.</p>
 		<p class="form-msg" id="delete-msg" role="alert" hidden></p>
 		<form method="dialog" class="modal-actions">
 			<button type="submit" value="cancel" class="btn-line">Annuler</button>
