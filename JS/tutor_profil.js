@@ -81,6 +81,7 @@ function addCourse(course, selector) {
     deleteLink.onclick = () => {
         confirmCourseDeleteModal.showModal();
         document.getElementById("delete-title").textContent = "Supprimer ce cours ?";
+        document.getElementById("delete-title").setAttribute("data-type", "course");
         document.getElementById("delete-name").textContent = course.title;
         document.getElementById("delete-name").setAttribute("data-id", course.id);
     };
@@ -133,6 +134,7 @@ function addExperience(exp, selector) {
     deleteLink.onclick = () => {
         confirmCourseDeleteModal.showModal();
         document.getElementById("delete-title").textContent = "Supprimer cette expérience ?";
+        document.getElementById("delete-title").setAttribute("data-type", "experience");
         document.getElementById("delete-name").textContent = exp.title;
         document.getElementById("delete-name").setAttribute("data-id", exp.id);
     };
@@ -232,6 +234,117 @@ function initScrollSpy() {
 	update();
 }
 
+async function deleteLine(deleteMsg, type) {
+    const idToDelete = document.getElementById("delete-name").getAttribute("data-id");
+    const res = await fetch(`/api/tutor/delete-${type}/${idToDelete}`, { method: "DELETE" });
+    if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        deleteMsg.textContent = data.error || `Impossible de supprimer l${type === "cours" ? "e cours" : "'expérience"}, réessayez.`;
+        deleteMsg.hidden = false;
+        return;
+    }
+    if (type === "course"){
+        COURSES = COURSES.filter(course => course.id != parseInt(idToDelete));
+        loadCourses();
+    } else {
+        EXPERIENCES = EXPERIENCES.filter(exp => exp.id != parseInt(idToDelete));
+        loadExperiences();
+    }
+    deleteModal.close();
+    document.getElementById("delete-name").removeAttribute("data-id");
+}
+
+async function addToDb(route, dataForm, msg) {
+    const sendRequest = await fetch(`/api/tutor/${route}`, {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(dataForm)
+    });
+    if (!sendRequest.ok) {
+        const data = await sendRequest.json().catch(() => ({}));
+        msg.textContent = data.error || "Impossible d'ajouter le cours, réessayez.";
+        msg.hidden = false;
+        return;
+    }
+    return await sendRequest.json();
+}
+
+async function modifyDb(route, modifiedId, dataForm, msg) {
+    const modification = await fetch(`/api/tutor/${route}/${modifiedId}`, {
+        method: "PATCH",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(dataForm)
+    });
+    if (!modification.ok) {
+        const data = await modification.json().catch(() => ({}));
+        msg.textContent = data.error || "Impossible de modifier le cours, réessayez.";
+        msg.hidden = false;
+        return;
+    }
+    return await modification.json();
+}
+
+function pushList(type, resServer) {
+    if (type === "course") COURSES.push(resServer.addCourseToDB);
+    else {
+        EXPERIENCES.push(resServer.addExpToDB);
+        EXPERIENCES.sort((a, b) => (b.endYear ?? Infinity) - (a.endYear ?? Infinity) || b.startYear - a.startYear);
+    }
+}
+
+function mapList(type, resServer) {
+    if (type === "course") COURSES = COURSES.map(c => c.id === resServer.findElem.id ? resServer.findElem : c);
+    else {
+        EXPERIENCES = EXPERIENCES.map(exp => exp.id === resServer.findElem.id ? resServer.findElem : exp);
+        EXPERIENCES.sort((a, b) => (b.endYear ?? Infinity) - (a.endYear ?? Infinity) || b.startYear - a.startYear);
+    }
+}
+
+async function processRoutes(form, modifiedId, type, dataForm, msg, loadFunction) {
+    if (!modifiedId) {
+        const resServer = await addToDb(`add-${type}`, dataForm, msg);
+        if (!resServer) return;
+        pushList(type, resServer);
+    } else {
+        const resServer = await modifyDb(`update-${type}`, modifiedId, dataForm, msg);
+        if (!resServer) return;
+        mapList(type, resServer);
+    }
+    loadFunction();
+    form.reset();
+    form.removeAttribute("data-id");
+    form.hidden = true;
+}
+
+async function processSubmit(event, form) {
+    event.preventDefault();
+    const type = form.id.includes("course") ? "course" : "experience";
+    const loadFunction = form.id.includes("course") ? loadCourses : loadExperiences
+    const dataForm = Object.fromEntries(new FormData(form));
+    const modifiedId = form.getAttribute("data-id");
+    const msg = document.getElementById(`${type}-msg`);
+    msg.hidden = true;
+    try { await processRoutes(form, modifiedId, type, dataForm, msg, loadFunction); }
+    catch (error) {
+        console.error(error);
+        msg.textContent = "Erreur serveur, réessayez plus tard.";
+        msg.hidden = false;
+    }
+}
+
+function processModals(form, addBtn, cancelBtn) {
+    addBtn.onclick = () => {
+        form.hidden = !form.hidden;
+        form.reset();
+        form.removeAttribute("data-id");
+    };
+    cancelBtn.onclick = () => {
+        form.hidden = true;
+        form.reset();
+        form.removeAttribute("data-id");
+    };
+}
+
 const addCourseBtn = document.getElementById("add-course");
 const courseForm = document.getElementById("course-form");
 const courseFormCancel = document.getElementById("course-form-cancel");
@@ -266,143 +379,19 @@ document.addEventListener("DOMContentLoaded", async () => {
     loadDispos();
     initScrollSpy();
 
-    addCourseBtn.onclick = () => {
-        courseForm.hidden = !courseForm.hidden;
-        courseForm.removeAttribute("data-id");
-    };
-    courseFormCancel.onclick = () => {
-        courseForm.hidden = true;
-        courseForm.reset();
-        courseForm.removeAttribute("data-id");
-    };
-
-    addPathBtn.onclick = () => pathForm.hidden = !pathForm.hidden;
-    pathFormCancel.onclick = () => {
-        pathForm.hidden = true;
-        pathForm.reset();
-    };
+    processModals(courseForm, addCourseBtn, courseFormCancel);
+    processModals(pathForm, addPathBtn, pathFormCancel);
 });
 
-courseForm.addEventListener("submit", async event => {
-    event.preventDefault();
-    const dataForm = Object.fromEntries(new FormData(courseForm));
-    const modifiedCourseId = courseForm.getAttribute("data-id");
-    const msg = document.getElementById("course-msg");
-    msg.hidden = true;
-    try {
-        if (!modifiedCourseId) {
-            const sendCourse = await fetch("/api/tutor/add-course", {
-                method: "POST",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify(dataForm)
-            });
-            if (!sendCourse.ok) {
-                const data = await sendCourse.json().catch(() => ({}));
-                msg.textContent = data.error || "Impossible d'ajouter le cours, réessayez.";
-                msg.hidden = false;
-                return;
-            }
-            const { addCourseToDB } = await sendCourse.json();
-            COURSES.push(addCourseToDB);
-        } else {
-            const modifyCourse = await fetch(`/api/tutor/update-course/${modifiedCourseId}`, {
-                method: "PATCH",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify(dataForm)
-            });
-            if (!modifyCourse.ok) {
-                const data = await modifyCourse.json().catch(() => ({}));
-                msg.textContent = data.error || "Impossible de modifier le cours, réessayez.";
-                msg.hidden = false;
-                return;
-            }
-            const { course } = await modifyCourse.json();
-            COURSES = COURSES.map(c => c.id === course.id ? course : c);
-        }
-        loadCourses();
-        courseForm.reset();
-        courseForm.removeAttribute("data-id");
-        courseForm.hidden = true;
-    } catch (error) {
-        msg.textContent = "Erreur serveur, réessayez plus tard.";
-        msg.hidden = false;
-    }
-});
-
-pathForm.addEventListener("submit", async event => {
-    event.preventDefault();
-    const dataForm = Object.fromEntries(new FormData(pathForm));
-    const modifiedExpId = pathForm.getAttribute("data-id");
-    const msg = document.getElementById("path-msg");
-    msg.hidden = true;
-    try {
-        if (!modifiedExpId) {
-            const sendExp = await fetch("/api/tutor/add-experience", {
-                method: "POST",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify(dataForm)
-            });
-            if (!sendExp.ok) {
-                const data = await sendExp.json().catch(() => ({}));
-                msg.textContent = data.error || "Impossible d'ajouter l'expérience, réessayez.";
-                msg.hidden = false;
-                return;
-            }
-            const { addExpToDB } = await sendExp.json();
-            EXPERIENCES.push(addExpToDB);
-        } else {
-            const modifyExp = await fetch(`/api/tutor/update-experience/${modifiedExpId}`, {
-                method: "PATCH",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify(dataForm)
-            });
-            if (!modifyExp.ok) {
-                const data = await modifyExp.json().catch(() => ({}));
-                msg.textContent = data.error || "Impossible de modifier le cours, réessayez.";
-                msg.hidden = false;
-                return;
-            }
-            const { experience } = await modifyExp.json();
-            EXPERIENCES = EXPERIENCES.map(exp => exp.id === experience.id ? experience : exp);
-        }
-        EXPERIENCES.sort((a, b) => (b.endYear ?? Infinity) - (a.endYear ?? Infinity) || b.startYear - a.startYear);
-        loadExperiences();
-        pathForm.reset();
-        pathForm.removeAttribute("data-id");
-        pathForm.hidden = true;
-    } catch (error) {
-		msg.textContent = "Erreur serveur, réessayez plus tard.";
-		msg.hidden = false;
-	}
-});
-
-async function deleteLine(deleteMsg, type) {
-    const route = type === "cours" ? "course" : type;
-    const idToDelete = document.getElementById("delete-name").getAttribute("data-id");
-    const res = await fetch(`/api/tutor/delete-${route}/${idToDelete}`, { method: "DELETE" });
-    if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        deleteMsg.textContent = data.error || `Impossible de supprimer l${type === "cours" ? "e cours" : "'expérience"}, réessayez.`;
-        deleteMsg.hidden = false;
-        return;
-    }
-    if (type === "cours"){
-        COURSES = COURSES.filter(course => course.id != parseInt(idToDelete));
-        loadCourses();
-    } else {
-        EXPERIENCES = EXPERIENCES.filter(exp => exp.id != parseInt(idToDelete));
-        loadExperiences();
-    }
-    deleteModal.close();
-    document.getElementById("delete-name").removeAttribute("data-id");
-}
+courseForm.addEventListener("submit", async event => await processSubmit(event, courseForm));
+pathForm.addEventListener("submit", async event => await processSubmit(event, pathForm));
 
 document.querySelector('#delete-modal button[value="confirm"]').addEventListener("click", async event => {
 	event.preventDefault();
     const deleteMsg = document.getElementById("delete-msg");
 	deleteMsg.hidden = true;
-    const type = document.getElementById("delete-title").textContent.split(" ")[2].replace("é", "e");
-	try { deleteLine(deleteMsg, type); }
+    const type = document.getElementById("delete-title").getAttribute("data-type");
+	try { await deleteLine(deleteMsg, type); }
     catch (error) {
 		deleteMsg.textContent = "Erreur serveur, réessayez plus tard.";
 		deleteMsg.hidden = false;

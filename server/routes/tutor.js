@@ -23,10 +23,42 @@ function parseExperience(body) {
 	const startYear = parseInt(body.startYear);
 	const endYear = body.endYear ? parseInt(body.endYear) : null;
 	const texts = [title, location];
-	if (!texts.every(t => typeof t === "string" && t.trim()) || !(startYear >= 0) || (endYear && !(endYear >= startYear))) return null;
+	if (!texts.every(t => typeof t === "string" && t.trim()) || !(startYear >= 0) || (endYear !== null && !(endYear >= startYear))) return null;
 	return { title: title.trim(), location: location.trim(), startYear, endYear };
 }
 
+async function updateFromDb(req, res, table, parseFunction, SELECT) {
+    try {
+        const id = parseInt(req.params.id);
+        const data = parseFunction(req.body);
+        if (!Number.isInteger(id) || !data) return res.status(400).json({ error: "Champs invalides" });
+
+        const { count } = await prisma[table].updateMany({ where: { id, tutor: { userId: req.session.user.id } }, data });
+        if (count === 0) return res.status(404).json({ error: "Element introuvable" });
+
+        const findElem = await prisma[table].findUnique({ where: { id }, select: SELECT });
+        res.json({ findElem });
+    } catch (error) {
+		console.error(error);
+		res.status(500).json({ error: "Erreur serveur" });
+	}
+}
+
+async function deleteFromDb(req, res, table) {
+    try {
+		const id = parseInt(req.params.id);
+		if (!Number.isInteger(id)) return res.status(400).json({ error: "Identifiant invalide" });
+
+		const { count } = await prisma[table].deleteMany({
+			where: { id, tutor: { userId: req.session.user.id } }
+		});
+		if (count === 0) return res.status(404).json({ error: "Element introuvable" });
+		res.status(204).end();
+    } catch (error) {
+		console.error(error);
+		res.status(500).json({ error: "Erreur serveur" });
+	}
+}
 
 router.get("/courses", requireAuth(["TUTOR"]), async (req, res) => {
     try {
@@ -92,39 +124,6 @@ router.post("/add-course", requireAuth(["TUTOR"]), async (req, res) => {
 	}
 });
 
-router.delete("/delete-course/:id", requireAuth(["TUTOR"]), async (req, res) => {
-	try {
-		const id = parseInt(req.params.id);
-		if (!Number.isInteger(id)) return res.status(400).json({ error: "Identifiant invalide" });
-
-		const { count } = await prisma.course.deleteMany({
-			where: { id, tutor: { userId: req.session.user.id } }
-		});
-		if (count === 0) return res.status(404).json({ error: "Cours introuvable" });
-		res.status(204).end();
-	} catch (error) {
-		console.error(error);
-		res.status(500).json({ error: "Erreur serveur" });
-	}
-});
-
-router.patch("/update-course/:id", requireAuth(["TUTOR"]), async (req, res) => {
-	try {
-		const id = parseInt(req.params.id);
-		const data = parseCourse(req.body);
-		if (!Number.isInteger(id) || !data) return res.status(400).json({ error: "Champs invalides" });
-
-		const { count } = await prisma.course.updateMany({ where: { id, tutor: { userId: req.session.user.id } }, data });
-		if (count === 0) return res.status(404).json({ error: "Cours introuvable" });
-
-		const course = await prisma.course.findUnique({ where: { id }, select: COURSE_SELECT });
-		res.json({ course });
-	} catch (error) {
-		console.error(error);
-		res.status(500).json({ error: "Erreur serveur" });
-	}
-});
-
 router.post("/add-experience", requireAuth(["TUTOR"]), async (req, res) => {
     try {
         const data = parseExperience(req.body);
@@ -139,8 +138,8 @@ router.post("/add-experience", requireAuth(["TUTOR"]), async (req, res) => {
                 tutorId: getTutorProfilId.id,
                 title: data.title,
                 location: data.location,
-                startYear: parseInt(data.startYear),
-                endYear: parseInt(data.endYear),
+                startYear: data.startYear,
+                endYear: data.endYear
             },
             select: EXP_SELECT
         });
@@ -151,37 +150,10 @@ router.post("/add-experience", requireAuth(["TUTOR"]), async (req, res) => {
 	}
 });
 
-router.delete("/delete-experience/:id", requireAuth(["TUTOR"]), async (req, res) => {
-	try {
-		const id = parseInt(req.params.id);
-		if (!Number.isInteger(id)) return res.status(400).json({ error: "Identifiant invalide" });
+router.delete("/delete-course/:id", requireAuth(["TUTOR"]), async (req, res) => await deleteFromDb(req, res, "course"));
+router.delete("/delete-experience/:id", requireAuth(["TUTOR"]), async (req, res) => await deleteFromDb(req, res, "experience"));
 
-		const { count } = await prisma.experience.deleteMany({
-			where: { id, tutor: { userId: req.session.user.id } }
-		});
-		if (count === 0) return res.status(404).json({ error: "Cours introuvable" });
-		res.status(204).end();
-	} catch (error) {
-		console.error(error);
-		res.status(500).json({ error: "Erreur serveur" });
-	}
-});
-
-router.patch("/update-experience/:id", requireAuth(["TUTOR"]), async (req, res) => {
-	try {
-		const id = parseInt(req.params.id);
-		const data = parseExperience(req.body);
-		if (!Number.isInteger(id) || !data) return res.status(400).json({ error: "Champs invalides" });
-
-		const { count } = await prisma.experience.updateMany({ where: { id, tutor: { userId: req.session.user.id } }, data });
-		if (count === 0) return res.status(404).json({ error: "Expérience introuvable" });
-
-		const experience = await prisma.experience.findUnique({ where: { id }, select: EXP_SELECT });
-		res.json({ experience });
-	} catch (error) {
-		console.error(error);
-		res.status(500).json({ error: "Erreur serveur" });
-	}
-});
+router.patch("/update-course/:id", requireAuth(["TUTOR"]), async (req, res) => await updateFromDb(req, res, "course", parseCourse, COURSE_SELECT));
+router.patch("/update-experience/:id", requireAuth(["TUTOR"]), async (req, res) => await updateFromDb(req, res, "experience", parseExperience, EXP_SELECT));
 
 module.exports = router;
