@@ -1827,3 +1827,13 @@ button.btn-line:hover{background:var(--ink);color:#fff}
 .btn-danger:hover{background:#b92a20}
 
 .modal-confirm .form-msg{margin-bottom:1rem}
+
+/* messages de confirmation */
+.toasts{position:fixed;right:1.5rem;bottom:1.5rem;z-index:300;display:flex;flex-direction:column;align-items:flex-end;gap:.6rem;pointer-events:none}
+.toast{pointer-events:auto;display:flex;align-items:center;gap:.7rem;max-width:min(360px,calc(100vw - 3rem));padding:.8rem 1.1rem;background:#fff;color:var(--text);border:1.5px solid var(--ink);border-radius:6px;box-shadow:5px 5px 0 rgba(27,42,107,.12);font-weight:500;cursor:pointer;animation:toast-in .25s ease-out}
+.toast::before{content:"✓";flex:none;display:grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--ink);color:#fff;font-size:.85rem;font-weight:700}
+.toast.error{border-color:var(--red)}
+.toast.error::before{content:"!";background:var(--red)}
+.toast.leaving{opacity:0;transform:translateY(8px);transition:opacity .25s,transform .25s}
+@keyframes toast-in{from{opacity:0;transform:translateY(12px)}}
+@media(prefers-reduced-motion:reduce){.toast{animation:none}.toast.leaving{transition:none}}

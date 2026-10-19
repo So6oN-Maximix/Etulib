@@ -90,8 +90,12 @@
 
 			<section id="fiche">
 				<h2>Ma fiche publique</h2>
-				<form class="form">
-					<label class="full">Présentation<textarea name="bio">J'enseigne les mathématiques depuis huit ans, au lycée comme en classe préparatoire.</textarea></label>
+				<form class="form" id="bio-form">
+					<label class="full">
+						Présentation
+						<textarea id="tutor-bio" name="bio" placeholder="Parlez rapidement de vous, ce texte figurera dans votre fiche tuteur."></textarea>
+					</label>
+					<p class="form-msg full" id="bio-msg" role="alert" hidden></p>
 					<button type="submit" class="btn-search">Enregistrer</button>
 				</form>
 			</section>
@@ -209,5 +213,6 @@
 	</dialog>
 </main>
 <footer class="site-footer"><div class="container copy" style="border:0;margin:0">&copy; 2026 Etulib. Tous droits réservés.</div></footer>
+<div class="toasts" id="toasts" role="status" aria-live="polite"></div>
 </body>
 </html>

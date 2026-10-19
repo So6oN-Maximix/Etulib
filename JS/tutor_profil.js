@@ -1,9 +1,27 @@
+function showToast(message, type = "ok") {
+	const toast = document.createElement("div");
+	toast.className = "toast" + (type === "error" ? " error" : "");
+	toast.textContent = message;
+	const close = () => { toast.classList.add("leaving"); setTimeout(() => toast.remove(), 250); };
+	toast.addEventListener("click", close);
+	document.getElementById("toasts").appendChild(toast);
+	setTimeout(close, 3500);
+}
+
 function updateHeader(tutorData) {
     const docHeader = document.querySelector(".page-head-inner");
     docHeader.querySelector(".avatar").textContent = `${tutorData.firstName[0]}${tutorData.lastName[0]}`.toUpperCase();
     docHeader.querySelector("h1").textContent = `${tutorData.firstName} ${tutorData.lastName.toUpperCase()}`;
     document.getElementById("tutor-role").textContent = getSubjects().length > 0 ? `Professeur de ${getSubjects().join(", ")}.` : "Professeur.";
     document.getElementById("member-since").textContent = `Membre depuis ${new Date(tutorData.createdAt).toLocaleDateString("fr-FR", { month: "long", year: "numeric" })}.`;
+}
+
+async function loadBio() {
+    try {
+        const bioRequest = await fetch("/api/tutor/get-bio", { method: "GET" });
+        const tutorBio = await bioRequest.json();
+        document.getElementById("tutor-bio").textContent = tutorBio.bio;
+    } catch (error) { console.error(error); }
 }
 
 function getSubjects() {
@@ -252,6 +270,7 @@ async function deleteLine(deleteMsg, type) {
     }
     deleteModal.close();
     document.getElementById("delete-name").removeAttribute("data-id");
+    showToast("Supprimé avec succès");
 }
 
 async function addToDb(route, dataForm, msg) {
@@ -314,6 +333,7 @@ async function processRoutes(form, modifiedId, type, dataForm, msg, loadFunction
     form.reset();
     form.removeAttribute("data-id");
     form.hidden = true;
+    showToast(modifiedId ? "Modifications enregistrées" : "Ajouté avec succès");
 }
 
 async function processSubmit(event, form) {
@@ -357,6 +377,8 @@ const addPathBtn = document.getElementById("add-path");
 const pathForm = document.getElementById("path-form");
 const pathFormCancel = document.getElementById("path-form-cancel");
 
+const bioForm = document.getElementById("bio-form");
+
 let COURSES = [];
 let EXPERIENCES = [];
 
@@ -374,6 +396,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     EXPERIENCES = await getExperiences();
 
     updateHeader(tutorData.user);
+    loadBio();
     loadExperiences();
     loadCourses();
     loadDispos();
@@ -396,4 +419,29 @@ document.querySelector('#delete-modal button[value="confirm"]').addEventListener
 		deleteMsg.textContent = "Erreur serveur, réessayez plus tard.";
 		deleteMsg.hidden = false;
 	}
+});
+
+bioForm.addEventListener("submit", async event => {
+    event.preventDefault();
+    const dataForm = Object.fromEntries(new FormData(bioForm));
+    const msg = document.getElementById("bio-msg");
+    msg.hidden = true;
+    try {
+        const sendBio = await fetch("/api/tutor/save-bio", {
+            method: "POST",
+            headers: {"Content-Type": "application/json" },
+            body: JSON.stringify(dataForm)
+        });
+        if (!sendBio.ok) {
+            const data = await sendBio.json().catch(() => ({}));
+            msg.textContent = data.error || "Impossible de modifier le cours, réessayez.";
+            msg.hidden = false;
+            return;
+        }
+        showToast("Enregistré avec succès");
+    } catch (error) {
+        console.error(error);
+        msg.textContent = "Erreur serveur, réessayez plus tard.";
+        msg.hidden = false;
+    }
 });

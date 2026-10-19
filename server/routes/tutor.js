@@ -156,4 +156,34 @@ router.delete("/delete-experience/:id", requireAuth(["TUTOR"]), async (req, res)
 router.patch("/update-course/:id", requireAuth(["TUTOR"]), async (req, res) => await updateFromDb(req, res, "course", parseCourse, COURSE_SELECT));
 router.patch("/update-experience/:id", requireAuth(["TUTOR"]), async (req, res) => await updateFromDb(req, res, "experience", parseExperience, EXP_SELECT));
 
+router.get("/get-bio", requireAuth(["TUTOR"]), async (req, res) => {
+    try {
+        const getTutorBio = await prisma.tutorProfile.findUnique({
+            where: { userId: req.session.user.id },
+            select: { bio: true }
+        });
+        if (!getTutorBio) return res.status(404).json({ error: "Profil tuteur introuvable" });
+        res.status(200).json({ bio: getTutorBio.bio });
+    } catch (error) {
+		console.error(error);
+		res.status(500).json({ error: "Erreur serveur" });
+	}
+});
+
+router.post("/save-bio", requireAuth(["TUTOR"]), async (req, res) => {
+    try {
+        const { bio } = req.body;
+
+        const { count } = await prisma.tutorProfile.updateMany({
+            where: { userId: req.session.user.id },
+            data: { bio }
+        });
+        if (count === 0) return res.status(404).json({ error: "Profil tuteur introuvable" });
+        res.status(200).json({ message: "Bio enregistrée" });
+    } catch (error) {
+		console.error(error);
+		res.status(500).json({ error: "Erreur serveur" });
+	}
+});
+
 module.exports = router;
