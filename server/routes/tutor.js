@@ -8,6 +8,7 @@ const LEVELS = ["PRIMAIRE", "COLLEGE", "LYCEE", "SUP"];
 const MODES = ["DOMICILE", "EN_LIGNE", "TOUS"];
 const COURSE_SELECT = { id: true, title: true, subject: true, level: true, bio: true, hourlyRate: true, duration: true, mode: true };
 const EXP_SELECT = { id: true, title: true, location: true, startYear: true, endYear: true };
+const AVAIL_SELECT = { id: true, day: true, startMin: true, endMin: true };
 
 function parseCourse(body) {
 	const { title, subject, level, bio, mode } = body;
@@ -26,6 +27,27 @@ function parseExperience(body) {
 	if (!texts.every(t => typeof t === "string" && t.trim()) || !(startYear >= 0) || (endYear !== null && !(endYear >= startYear))) return null;
 	return { title: title.trim(), location: location.trim(), startYear, endYear };
 }
+
+function parseAvailibility(list) {
+	if (!Array.isArray(list)) return null;
+	const out = [];
+	for (const d of list) {
+		if (!d || typeof d.start !== "string" || typeof d.end !== "string") return null;
+		const day = parseInt(d.day);
+		const startMin = formatMinutes(d.start);
+		const endMin = formatMinutes(d.end);
+		if (!(day >= 0 && day <= 6) || !(startMin >= 0 && endMin <= 1440 && startMin < endMin) || startMin % 30 || endMin % 30) return null;
+		out.push({ day, startMin, endMin });
+	}
+	return out;
+}
+
+function formatMinutes(hour) {
+    const hourSplit = hour.split(":");
+    return parseInt(hourSplit[0]) * 60 + parseInt(hourSplit[1]);
+}
+
+function formatHours(minutes) { return `${Math.floor(minutes / 60).toString().padStart(2, "0")}:${(minutes % 60).toString().padStart(2, "0")}`; }
 
 async function updateFromDb(req, res, table, parseFunction, SELECT) {
     try {
@@ -180,6 +202,67 @@ router.post("/save-bio", requireAuth(["TUTOR"]), async (req, res) => {
         });
         if (count === 0) return res.status(404).json({ error: "Profil tuteur introuvable" });
         res.status(200).json({ message: "Bio enregistrée" });
+    } catch (error) {
+		console.error(error);
+		res.status(500).json({ error: "Erreur serveur" });
+	}
+});
+
+router.post("/save-availibility", requireAuth(["TUTOR"]), async (req, res) => {
+    try {
+        const data = parseAvailibility(req.body.planner);
+        if (!data) return res.status(400).json({ error: "Saisie invalide" });
+        
+		await prisma.availibility.deleteMany({
+            where: { tutor: { userId: req.session.user.id } }
+        });
+
+        const getTutorProfilId = await prisma.tutorProfile.findUnique({
+            where: { userId: req.session.user.id },
+            select: { id: true}
+        });
+
+        let addedDispos = [];
+        for (const dispo of data) {
+            const addDispo = await prisma.availibility.create({
+                data: {
+                    tutorId: getTutorProfilId.id,
+                    day: dispo.day,
+                    startMin: dispo.startMin,
+                    endMin: dispo.endMin
+                },
+                select: AVAIL_SELECT
+            });
+            addedDispos.push(addDispo);
+        }
+        const formatedDispos = addedDispos.map(dispo => {
+            return {
+                day: dispo.day,
+                start: formatHours(dispo.startMin),
+                end: formatHours(dispo.endMin)
+            };
+        });
+        res.status(201).json({ formatedDispos });
+    } catch (error) {
+		console.error(error);
+		res.status(500).json({ error: "Erreur serveur" });
+	}
+});
+
+router.get("/get-availibility", requireAuth(["TUTOR"]), async (req, res) => {
+    try {
+        const allAvailibilities = await prisma.availibility.findMany({
+            where: { tutor: { userId: req.session.user.id } },
+            select: AVAIL_SELECT
+        });
+        const availibilities = allAvailibilities.map(availibility => {
+            return {
+                day: availibility.day,
+                start: formatHours(availibility.startMin),
+                end: formatHours(availibility.endMin)
+            };
+        });
+        res.status(200).json({ availibilities });
     } catch (error) {
 		console.error(error);
 		res.status(500).json({ error: "Erreur serveur" });

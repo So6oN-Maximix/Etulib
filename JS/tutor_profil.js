@@ -48,6 +48,17 @@ async function getExperiences() {
     } catch (error) { console.error(error); }
 }
 
+async function getAvailibilities() {
+	try {
+		const res = await fetch("/api/tutor/get-availibility");
+		if (!res.ok) return [];
+		return (await res.json()).availibilities;
+	} catch (error) {
+		console.error(error);
+		return [];
+	}
+}
+
 function loadCourses() {
     const coursesList = document.getElementById("mes-cours").querySelector("ul.courses");
     coursesList.innerHTML = "";
@@ -164,69 +175,6 @@ function addExperience(exp, selector) {
     selector.appendChild(globalPoint);
 }
 
-function loadDispos() {
-	const root = document.getElementById("planner");
-	const DAYS = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
-	const START = 8, END = 21;
-	const SLOTS = (END - START) * 2;
-
-	const el = (tag, cls, text) => {
-		const e = document.createElement(tag);
-		if (cls) e.className = cls;
-		if (text) e.textContent = text;
-		return e;
-	};
-
-	root.append(el("div"), ...DAYS.map(d => el("div", "day", d)));
-	for (let s = 0; s < SLOTS; s++) {
-		root.append(el("div", "hour", s % 2 === 0 ? (START + s / 2) + " h" : ""));
-		for (let d = 0; d < 7; d++) {
-			const c = el("div", "cell" + (s % 2 === 0 ? " hr" : ""));
-			c.dataset.d = d;
-			c.dataset.s = s;
-			root.append(c);
-		}
-	}
-
-    const cells = [...root.querySelectorAll(".cell")];
-	let selected = new Set();
-	let drag = null;
-	const key = (d, s) => d + "-" + s;
-
-	const paint = () => cells.forEach(c => c.classList.toggle("on", selected.has(key(c.dataset.d, c.dataset.s))));
-
-	const cellAt = (x, y) => {
-		const e = document.elementFromPoint(x, y);
-		return e && e.classList.contains("cell") ? e : null;
-	};
-
-	function update(c) {
-		const [d1, d2] = [drag.d, +c.dataset.d].sort((a, b) => a - b);
-		const [s1, s2] = [drag.s, +c.dataset.s].sort((a, b) => a - b);
-		selected = new Set(drag.base);
-		for (let d = d1; d <= d2; d++)
-			for (let s = s1; s <= s2; s++)
-				drag.add ? selected.add(key(d, s)) : selected.delete(key(d, s));
-		paint();
-	}
-
-	root.addEventListener("pointerdown", e => {
-		const c = cellAt(e.clientX, e.clientY);
-		if (!c) return;
-		e.preventDefault();
-		drag = { d: +c.dataset.d, s: +c.dataset.s, base: new Set(selected), add: !selected.has(key(c.dataset.d, c.dataset.s)) };
-		update(c);
-	});
-
-	window.addEventListener("pointermove", e => {
-		if (!drag) return;
-		const c = cellAt(e.clientX, e.clientY);
-		if (c) update(c);
-	});
-
-	["pointerup", "pointercancel"].forEach(t => window.addEventListener(t, () => { drag = null; }));
-}
-
 function initScrollSpy() {
 	const items = [...document.querySelectorAll('.side-nav a[href^="#"]')]
 		.filter(a => a.hash.length > 1)
@@ -281,7 +229,7 @@ async function addToDb(route, dataForm, msg) {
     });
     if (!sendRequest.ok) {
         const data = await sendRequest.json().catch(() => ({}));
-        msg.textContent = data.error || "Impossible d'ajouter le cours, réessayez.";
+        msg.textContent = data.error || "Impossible d'ajouter le cours, réessayez";
         msg.hidden = false;
         return;
     }
@@ -296,7 +244,7 @@ async function modifyDb(route, modifiedId, dataForm, msg) {
     });
     if (!modification.ok) {
         const data = await modification.json().catch(() => ({}));
-        msg.textContent = data.error || "Impossible de modifier le cours, réessayez.";
+        msg.textContent = data.error || "Impossible de modifier le cours, réessayez";
         msg.hidden = false;
         return;
     }
@@ -347,7 +295,7 @@ async function processSubmit(event, form) {
     try { await processRoutes(form, modifiedId, type, dataForm, msg, loadFunction); }
     catch (error) {
         console.error(error);
-        msg.textContent = "Erreur serveur, réessayez plus tard.";
+        msg.textContent = "Erreur serveur, réessayez plus tard";
         msg.hidden = false;
     }
 }
@@ -378,9 +326,11 @@ const pathForm = document.getElementById("path-form");
 const pathFormCancel = document.getElementById("path-form-cancel");
 
 const bioForm = document.getElementById("bio-form");
+const savePlanner = document.getElementById("save-planner");
 
 let COURSES = [];
 let EXPERIENCES = [];
+let PLANNER = [];
 
 if (new URLSearchParams(location.search).has("welcome")) {
 	onboardingModal.showModal();
@@ -394,12 +344,13 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     COURSES = await getCourses();
     EXPERIENCES = await getExperiences();
+    PLANNER = loadDispos();
 
+    PLANNER.set(await getAvailibilities());
     updateHeader(tutorData.user);
     loadBio();
     loadExperiences();
     loadCourses();
-    loadDispos();
     initScrollSpy();
 
     processModals(courseForm, addCourseBtn, courseFormCancel);
@@ -416,7 +367,7 @@ document.querySelector('#delete-modal button[value="confirm"]').addEventListener
     const type = document.getElementById("delete-title").getAttribute("data-type");
 	try { await deleteLine(deleteMsg, type); }
     catch (error) {
-		deleteMsg.textContent = "Erreur serveur, réessayez plus tard.";
+		deleteMsg.textContent = "Erreur serveur, réessayez plus tard";
 		deleteMsg.hidden = false;
 	}
 });
@@ -434,14 +385,33 @@ bioForm.addEventListener("submit", async event => {
         });
         if (!sendBio.ok) {
             const data = await sendBio.json().catch(() => ({}));
-            msg.textContent = data.error || "Impossible de modifier le cours, réessayez.";
+            msg.textContent = data.error || "Impossible de modifier le cours, réessayez";
             msg.hidden = false;
             return;
         }
         showToast("Enregistré avec succès");
     } catch (error) {
         console.error(error);
-        msg.textContent = "Erreur serveur, réessayez plus tard.";
+        msg.textContent = "Erreur serveur, réessayez plus tard";
         msg.hidden = false;
     }
 });
+
+savePlanner.onclick = async () => {
+    try {
+        const sendAvailibility = await fetch("/api/tutor/save-availibility", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ planner: PLANNER.get()})
+        });
+        if (!sendAvailibility.ok) {
+            const data = await sendAvailibility.json().catch(() => ({}));
+            showToast(data.error || "Impossible d'enregistrer les disponibilités, réessayez", "error");
+            return;
+        }
+        showToast("Disponibilités enregistrées")
+    } catch (error) {
+        console.error(error);
+        showToast("Erreur serveur, réessayez plus tard", "error");
+    }
+};
