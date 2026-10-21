@@ -1066,11 +1066,7 @@ select {
 
 .prose {
 	max-width: 620px;
-	font-size: 1.05rem
-}
-
-.subjects li {
-	grid-template-columns: 1fr auto
+	font-size: 1.05rem;
 }
 
 .timeline {
@@ -1837,3 +1833,83 @@ button.btn-line:hover{background:var(--ink);color:#fff}
 .toast.leaving{opacity:0;transform:translateY(8px);transition:opacity .25s,transform .25s}
 @keyframes toast-in{from{opacity:0;transform:translateY(12px)}}
 @media(prefers-reduced-motion:reduce){.toast{animation:none}.toast.leaving{transition:none}}
+
+/* page professeur introuvable */
+.not-found-actions{display:flex;flex-wrap:wrap;align-items:center;gap:.75rem}
+.not-found-actions .btn-search{display:inline-block;padding:.85rem 1.6rem;border-radius:6px;text-align:center}
+
+.tutors.subjects li{grid-template-columns:minmax(0,1fr) auto}
+.subjects .price{white-space:nowrap}
+
+.subjects li{transition:background .15s,box-shadow .15s}
+.subjects li:hover{background:var(--tint);box-shadow:-1rem 0 0 var(--tint),1rem 0 0 var(--tint); cursor: pointer;}
+
+.booking .booking-course{margin:0;font-size:1.2rem;line-height:1.2;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;overflow:hidden}
+
+/* carte de réservation : cachée tant qu'aucun cours n'est choisi */
+.booking:not(.visible){visibility:hidden}
+.booking.visible{animation:booking-in .3s ease-out}
+@keyframes booking-in{from{opacity:0;transform:translateX(16px)}}
+@keyframes booking-in-mobile{from{opacity:0;transform:translateY(-8px)}}
+@media(max-width:900px){
+	.booking:not(.visible){display:none}
+	.booking.visible{animation-name:booking-in-mobile}
+}
+@media(prefers-reduced-motion:reduce){.booking.visible{animation:none}}
+
+.timeline small{display:block;margin-top:.1rem;color:var(--muted);font-size:.9rem;line-height:1.4}
+
+/* Sélecteur de semaine dans le bloc de réservation */
+.week-picker {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: .5rem;
+	padding: .35rem .5rem;
+	background: var(--tint);
+	border: 1px solid var(--line);
+	border-radius: 6px;
+	margin-top: .25rem;
+}
+
+.week-label {
+	font-size: .88rem;
+	font-weight: 600;
+	color: var(--ink);
+	text-align: center;
+}
+
+.btn-week {
+	display: grid;
+	place-items: center;
+	width: 28px;
+	height: 28px;
+	background: #fff;
+	border: 1px solid var(--line);
+	border-radius: 4px;
+	color: var(--ink);
+	font-family: inherit;
+	font-size: 1.2rem;
+	font-weight: 600;
+	line-height: 1;
+	cursor: pointer;
+	transition: background .15s, border-color .15s, color .15s;
+}
+
+.btn-week:hover:not(:disabled) {
+	background: var(--ink);
+	color: #fff;
+	border-color: var(--ink);
+}
+
+.btn-week:disabled {
+	opacity: .35;
+	cursor: not-allowed;
+}
+
+.course-info{display:block;margin-top:.3rem;color:var(--ink);font-size:.9rem;font-weight:600}
+.booking .course-info{margin-top:-.4rem}
+
+.slots a{transition:background .15s,color .15s,border-color .15s}
+.slots a.selected{background:var(--ink);border-color:var(--ink);color:#fff}
+.slots a:focus-visible{outline:2px solid var(--ink);outline-offset:2px}

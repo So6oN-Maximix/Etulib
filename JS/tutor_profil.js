@@ -14,6 +14,7 @@ function updateHeader(tutorData) {
     docHeader.querySelector("h1").textContent = `${tutorData.firstName} ${tutorData.lastName.toUpperCase()}`;
     document.getElementById("tutor-role").textContent = getSubjects().length > 0 ? `Professeur de ${getSubjects().join(", ")}.` : "Professeur.";
     document.getElementById("member-since").textContent = `Membre depuis ${new Date(tutorData.createdAt).toLocaleDateString("fr-FR", { month: "long", year: "numeric" })}.`;
+    document.getElementById("public-page").href = `/tutor?id=${tutorData.id}`;
 }
 
 async function loadBio() {

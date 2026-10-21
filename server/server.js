@@ -27,6 +27,7 @@ app.use("/JS", express.static(path.join(root, "JS")));
 
 app.use("/api/auth", require("./routes/auth"));
 app.use("/api/tutor", require("./routes/tutor"));
+app.use("/api/public", require("./routes/public"));
 
 app.get("/", (req, res) => res.sendFile(path.join(root, "index.html")));
 

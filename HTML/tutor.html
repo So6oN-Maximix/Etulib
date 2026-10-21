@@ -3,7 +3,7 @@
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Camille M., professeure de mathématiques - Etulib</title>
+	<title>Camille M. - Etulib</title>
 	<link rel="preconnect" href="https://fonts.googleapis.com">
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 	<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700&family=Instrument+Sans:wght@400;500;600&family=Kalam&display=swap" rel="stylesheet">
@@ -36,8 +36,12 @@
 				<div>
 					<p class="crumb"><a href="/recherche">Résultats de recherche</a> / Mathématiques</p>
 					<h1>Camille M.</h1>
-					<p>Professeure agrégée de mathématiques, lycée et prépa.</p>
-					<div class="tags"><span>Profil vérifié</span><span>En ligne</span><span>À domicile</span><span><b>4,9</b> sur 5 (126 avis)</span></div>
+					<p id="tutor-role"></p>
+					<p id="member-since"></p>
+					<div class="tags">
+						<span>Profil vérifié</span>
+						<span><b>4,9</b> sur 5 (126 avis)</span>
+					</div>
 				</div>
 			</div>
 		</div>
@@ -47,16 +51,15 @@
 		<div class="account">
 			<section>
 				<h2>À propos</h2>
+				<div class="empty" hidden>
+					<p>Le professeur n'a pas encore rédigé sa description.</p>
+				</div>
 				<p class="prose">J'enseigne les mathématiques depuis huit ans, au lycée comme en classe préparatoire. Ma priorité : que l'élève comprenne le raisonnement plutôt qu'il apprenne des recettes. Chaque séance part de ses cahiers et de ses erreurs, et se termine par un court compte rendu pour les parents.</p>
 			</section>
 
 			<section>
 				<h2>Matières et niveaux</h2>
-				<ul class="tutors compact subjects">
-					<li><div class="who"><h3>Mathématiques</h3><p>Seconde, première (spécialité), terminale</p></div><div class="price">32 €<small>/heure</small></div></li>
-					<li><div class="who"><h3>Préparation au bac</h3><p>Révisions ciblées, annales, oral de rattrapage</p></div><div class="price">34 €<small>/heure</small></div></li>
-					<li><div class="who"><h3>Prépa et premier cycle</h3><p>Analyse, algèbre linéaire, colles</p></div><div class="price">38 €<small>/heure</small></div></li>
-				</ul>
+				<ul class="tutors compact subjects"></ul>
 			</section>
 
 			<section>
@@ -80,14 +83,16 @@
 		</div>
 
 		<aside class="booking" aria-label="Réserver">
-			<div class="price">32 €<small>/heure</small></div>
-			<p class="free-note">Première séance sans engagement</p>
-			<h3>Prochains créneaux</h3>
-			<div class="slots">
-				<p>Mer. 14 oct.</p><div><a href="#">17 h 30</a><a href="#">19 h 00</a></div>
-				<p>Jeu. 15 oct.</p><div><a href="#">18 h 00</a></div>
-				<p>Sam. 17 oct.</p><div><a href="#">10 h 00</a><a href="#">14 h 00</a></div>
+			<h3 class="booking-course" id="booking-course">Choisissez un cours</h3>
+			<div class="price" id="to-book-price">32 €<small>/heure</small></div>
+			<small class="course-info" id="booking-info"></small>
+			<div class="week-picker">
+				<button type="button" class="btn-week" id="prev-week" aria-label="Semaine précédente">‹</button>
+				<span class="week-label" id="week-label">13 oct. — 19 oct.</span>
+				<button type="button" class="btn-week" id="next-week" aria-label="Semaine suivante">›</button>
 			</div>
+			<h3>Prochains créneaux</h3>
+			<div class="slots"></div>
 			<a href="#" class="btn-search">Réserver un cours</a>
 			<a href="#" class="link-quiet">Envoyer un message</a>
 		</aside>
