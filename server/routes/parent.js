@@ -26,10 +26,10 @@ function parseParent(body) {
 }
 
 function parseChild(body) {
-    const { firstName, level, email, birthDate } = body;
+    const { firstName, level, email, birthDate, password } = body;
     const emailValidation = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if ((email && !emailValidation.test(email)) || !firstName || !LEVELS.includes(level) || !birthDate) return null;
-    return { firstName, level, email, birthDate }
+    if ((email && !emailValidation.test(email)) || !firstName || !LEVELS.includes(level) || !birthDate || !password) return null;
+    return { firstName, level, email, birthDate, password }
 }
 
 function normalizePhone(input) {
@@ -85,13 +85,15 @@ router.post("/add-child", requireAuth(["PARENT"]), async (req, res) => {
     try {
         const data = parseChild(req.body);
         if (!data) return res.status(400).json({ error: "Champs invalides" });
+        if (data.password.length < 8) return req.status(400).json({ error: "La mot de passe doit contenir au moins 8 caractères"});
 
         const getParentId = await prisma.parentProfile.findUnique({
             where: { userId: req.session.user.id }
         });
         const addChild = await prisma.user.create({
             data: {
-                email: data.email ? data.email : null,
+                email: data.email,
+                passwordHash: await bcrypt.hash(data.password, 12),
                 firstName: data.firstName,
                 lastName: req.session.user.lastName,
                 role: "STUDENT",
@@ -127,11 +129,8 @@ router.post("/add-child", requireAuth(["PARENT"]), async (req, res) => {
 
 router.get("/get-children", requireAuth(["PARENT"]), async (req, res) => {
     try {
-        const getParentId = await prisma.parentProfile.findUnique({
-            where: { userId: req.session.user.id }
-        }); 
         const children = await prisma.studentProfile.findMany({
-            where: { parentId: getParentId.id },
+            where: { parent: { userId: req.session.user.id} },
             select: CHILDREN_SELECT
         });
         res.status(200).json({ children });

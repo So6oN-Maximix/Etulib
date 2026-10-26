@@ -83,8 +83,16 @@
 							<option value="SUP">Prépa et supérieur</option>
 						</select>
 					</label>
-					<label>Adresse e-mail<input type="text" name="email" placeholder="Si différente de la votre"></label>
-					<label>Date de naissance<input type="date" name="birthDate" id="birthDateInput"></label>
+					<label>Adresse e-mail<input type="text" name="email" placeholder="Pour qu'il puisse se connecter seul" required></label>
+					<label>Date de naissance<input type="date" name="birthDate" id="birthDateInput" required></label>
+					<label class="full">Mot de passe
+						<span class="pw">
+							<input type="password" minlength="8" autocomplete="new-password" placeholder="Mot de passe temporaire" name="password" required>
+							<button type="button" class="pw-toggle" aria-label="Afficher le mot de passe" aria-pressed="false">
+								<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/><path class="slash" d="M3 3l18 18"/></svg>
+							</button>
+						</span>
+					</label>
 					<p class="form-msg full" id="form-msg" role="alert" hidden></p>
 					<div class="form-actions">
 						<button type="submit" class="btn-search">Valider</button>

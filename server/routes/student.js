@@ -1,6 +1,7 @@
 const express = require("express");
 const prisma = require("../lib/prisma");
 const requireAuth = require("../middleware/requireAuth");
+const requireChildren = require("../middleware/requireChildren");
 
 const router = express.Router();
 
@@ -26,25 +27,25 @@ function formatPhone(normalizedPhone) {
     return `0${phoneParts.join(" ")}`;
 }
 
-router.get("/get-info", requireAuth(["STUDENT"]), async (req, res) => {
+router.get("/get-info", requireChildren, async (req, res) => {
     try {
-        const studentInfo = await prisma.studentProfile.findUnique({
-            where: { userId: req.session.user.id },
-            select: {
-                phone: true,
-                city: true,
-                level: true
-            }
-        });
-        studentInfo.phone = studentInfo.phone ? formatPhone(studentInfo.phone) : "";
-        res.status(200).json(studentInfo);
+		const studentInfo = await prisma.studentProfile.findUnique({
+			where: { userId: req.studentUserId },
+			select: {
+				phone: true, city: true, level: true,
+				user: { select: { firstName: true, lastName: true, email: true } }
+			}
+		});
+		if (!studentInfo) return res.status(404).json({ error: "Élève introuvable" });
+        const { user, ...rest } = studentInfo;
+        res.json({ ...rest, ...user, phone: rest.phone ? formatPhone(rest.phone) : "", email: user.email ? user.email : req.session.user.email });
     } catch (error) {
 		console.error(error);
 		res.status(500).json({ error: "Erreur serveur" });
 	}
 });
 
-router.patch("/perso-info", requireAuth(["STUDENT"]), async (req, res) => {
+router.patch("/perso-info", requireChildren, async (req, res) => {
     try {
         const data = parseStudent(req.body);
         if (!data) return res.status(400).json({ error: "Champs invalides" });
