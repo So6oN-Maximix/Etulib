@@ -9,6 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700&family=Instrument+Sans:wght@400;500;600&family=Kalam&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/styles.css">
     <script src="/JS/header.js" defer></script>
+	<script src="/JS/profils.js" defer></script>
     <script src="/JS/parent_profil.js" defer></script>
 </head>
 <body>
@@ -63,25 +64,32 @@
 
 			<section id="enfants">
 				<h2>Mes enfants</h2>
-				<ul class="courses">
-					<li>
-						<div class="who"><h3>Léa</h3><p>Seconde. Mathématiques, anglais.</p></div>
-						<div class="course-actions"><a href="#" class="btn-line">Réserver un cours</a><a href="#" class="link-quiet">Modifier</a></div>
-					</li>
-					<li>
-						<div class="who"><h3>Tom</h3><p>Sixième. Français.</p></div>
-						<div class="course-actions"><a href="#" class="btn-line">Réserver un cours</a><a href="#" class="link-quiet">Modifier</a></div>
-					</li>
-				</ul>
+				<div class="empty" hidden>
+					<p>Vous n'avez pas encore enregistré d'enfant.</p>
+				</div>
+				<ul class="courses"></ul>
 
 				<a href="#" class="btn-line" id="add-child">+ Ajouter un enfant</a>
 
-				<form class="form course-form" id="child-form" onsubmit="return false" hidden>
+				<form class="form course-form" id="child-form" hidden>
 					<h3>Nouvel enfant</h3>
-					<label>Prénom<input type="text" name="first-name" required></label>
-					<label>Niveau<select name="level"><option>Primaire</option><option>Collège</option><option>Lycée</option><option>Prépa et supérieur</option></select></label>
-					<label class="full">Classe et matières à travailler<input type="text" name="notes" placeholder="Ex : Cinquième, mathématiques et anglais"></label>
-					<div class="form-actions"><button type="submit" class="btn-search">Valider</button><a href="#" class="link-quiet">Annuler</a></div>
+					<label>Prénom<input type="text" name="firstName" required></label>
+					<label>
+						Niveau
+						<select name="level">
+							<option value="PRIMAIRE">Primaire</option>
+							<option value="COLLEGE">Collège</option>
+							<option value="LYCEE">Lycée</option>
+							<option value="SUP">Prépa et supérieur</option>
+						</select>
+					</label>
+					<label>Adresse e-mail<input type="text" name="email" placeholder="Si différente de la votre"></label>
+					<label>Date de naissance<input type="date" name="birthDate" id="birthDateInput"></label>
+					<p class="form-msg full" id="form-msg" role="alert" hidden></p>
+					<div class="form-actions">
+						<button type="submit" class="btn-search">Valider</button>
+						<a href="#" class="link-quiet">Annuler</a>
+					</div>
 				</form>
 			</section>
 
@@ -118,12 +126,12 @@
 
 			<section id="infos">
 				<h2>Mes informations</h2>
-				<form class="form" onsubmit="return false">
-					<label>Prénom<input type="text" value="Nadia"></label>
-					<label>Nom<input type="text" value="Benali"></label>
-					<label class="full">Adresse e-mail<input type="email" value="nadia.benali@exemple.fr"></label>
-					<label>Téléphone<input type="tel" value="06 12 34 56 78"></label>
-					<label>Ville<input type="text" value="Saint-Étienne"></label>
+				<form class="form" id="parent-info">
+					<label>Prénom<input type="text" placeholder="Prénom" name="firstName"></label>
+					<label>Nom<input type="text" placeholder="Nom" name="lastName"></label>
+					<label class="full">Adresse e-mail<input type="email" placeholder="votre.mail@exemple.fr" name="email"></label>
+					<label>Téléphone<input type="tel" placeholder="06 12 34 56 78" name="phone"></label>
+					<label>Ville<input type="text" placeholder="Votre ville" name="city"></label>
 					<button type="submit" class="btn-search">Enregistrer</button>
 				</form>
 			</section>
@@ -131,5 +139,6 @@
 	</div>
 </main>
 <footer class="site-footer"><div class="container copy" style="border:0;margin:0">&copy; 2026 Etulib. Tous droits réservés.</div></footer>
+<div class="toasts" id="toasts" role="status" aria-live="polite"></div>
 </body>
 </html>

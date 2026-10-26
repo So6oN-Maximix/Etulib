@@ -28,10 +28,12 @@ app.use("/JS", express.static(path.join(root, "JS")));
 app.use("/api/auth", require("./routes/auth"));
 app.use("/api/tutor", require("./routes/tutor"));
 app.use("/api/public", require("./routes/public"));
+app.use("/api/student", require("./routes/student"));
+app.use("/api/parent", require("./routes/parent"));
 
 app.get("/", (req, res) => res.sendFile(path.join(root, "index.html")));
 
-const protectedPages = { student_profil: ["STUDENT"], parent_profil: ["PARENT"], tutor_profil: ["TUTOR"] };
+const protectedPages = { student_profil: ["STUDENT", "PARENT"], parent_profil: ["PARENT"], tutor_profil: ["TUTOR"] };
 app.get("/:page", (req, res) => {
 	const allowed = protectedPages[req.params.page];
 	if (allowed && !allowed.includes(req.session.user?.role)) return res.redirect("/");

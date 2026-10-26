@@ -1,5 +1,23 @@
 const signupForm = document.getElementById("signup-form");
 
+document.addEventListener("DOMContentLoaded", () => {
+    const birthdayInput = document.getElementById("birthDateInput");
+    const studentFields = document.getElementById("student-fields");
+    const radios = signupForm.querySelectorAll("input[name=\"role\"]");
+    radios.forEach(radio => {
+        radio.addEventListener("change", (event) => {
+            if (event.target.value === "student") {
+                studentFields.hidden = false;
+                birthdayInput.required = true;
+            } else {
+                studentFields.hidden = true;
+                birthdayInput.required = false;
+                birthdayInput.value = "";
+            }
+        });
+    });
+});
+
 signupForm.addEventListener("submit", async event => {
     event.preventDefault();
 	const dataForm = Object.fromEntries(new FormData(signupForm));

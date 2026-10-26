@@ -7,7 +7,7 @@
 			const { user } = await res.json();
 
 			const space = document.createElement("a");
-			space.href = user.role === "TUTOR" ? "/tutor_profil" : "/student_profil";
+			space.href = user.role === "TUTOR" ? "/tutor_profil" : (user.role === "STUDENT" ? "/student_profil" : "/parent_profil");
 			space.className = "btn-signup";
 			space.textContent = "Mon espace";
 

@@ -9,7 +9,7 @@ const limiter = rateLimit({ windowMs: 15 * 60 * 1000, limit: 20, message: { erro
 const ROLES = ["PARENT", "STUDENT", "TUTOR"];
 const DUMMY_HASH = bcrypt.hashSync("dummy-password", 12);
 const isStr = v => typeof(v) === "string";
-const publicUser = u => ({ id: u.id, firstName: u.firstName, lastName: u.lastName, role: u.role, createdAt: u.createdAt });
+const publicUser = u => ({ id: u.id, firstName: u.firstName, lastName: u.lastName, email: u.email, role: u.role, createdAt: u.createdAt });
 
 
 function startSession(req, res, user, status = 200) {
@@ -22,14 +22,17 @@ function startSession(req, res, user, status = 200) {
 
 router.post("/signup", limiter, async (req,res) => {
     try {
-		const { email, password, role } = req.body;
+		const { email, password, role, birthDate } = req.body;
 		const firstName = req.body["first-name"], lastName = req.body["last-name"];
-        if (![email, password, role, firstName, lastName].every(isStr)) return res.status(400).json({ error: "Champs invalides" });
+        if (![email, password, role, firstName, lastName].every(isStr) || (role === "student" && birthDate === "")) return res.status(400).json({ error: "Champs invalides" });
 
 		const cleanEmail = email.trim().toLowerCase();
 		const cleanRole = role.toUpperCase();
+        const diffMs = new Date(Date.now()) - new Date(birthDate);
 		if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) return res.status(400).json({ error: "Adresse e-mail invalide" });
 		if (password.length < 8 || password.length > 72) return res.status(400).json({ error: "Le mot de passe doit faire entre 8 et 72 caractères" });
+        if (cleanRole === "STUDENT" && !/^\d{4}-\d{2}-\d{2}$/.test(birthDate)) return res.status(400).json({ error: "Date de naissance invalide" });
+        if (diffMs / (1000 * 60 * 60 * 24 * 365) < 18) return res.status(400).json({ error: "Vous n'êtes pas majeur(e). Veuillez créer un compte avec un de vos parents" });
 		if (!ROLES.includes(cleanRole)) return res.status(400).json({ error: "Rôle invalide" });
         
         const user = await prisma.user.create({
@@ -39,7 +42,9 @@ router.post("/signup", limiter, async (req,res) => {
 				firstName: firstName.trim(),
 				lastName: lastName.trim(),
 				role: cleanRole,
-                ...(cleanRole === "TUTOR" && { tutor: { create: {} } })
+                ...(cleanRole === "TUTOR" && { tutor: { create: {} } }),
+                ...(cleanRole === "PARENT" && { parent: { create: {} } }),
+                ...(cleanRole === "STUDENT" && { student: { create: { birthDate: new Date(birthDate) } } })
             }
         });
 		startSession(req, res, user, 201);

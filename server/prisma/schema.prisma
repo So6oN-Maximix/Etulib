@@ -9,16 +9,17 @@ datasource db {
 }
 
 model User {
-	id           Int      @id @default(autoincrement())
-	email        String   @unique
-	passwordHash String
+	id           Int      		 @id @default(autoincrement())
+	email        String?  	     @unique
+	passwordHash String?
 	firstName    String
 	lastName     String
-	role         Role     @default(STUDENT)
+	role         Role  		     @default(STUDENT)
 	tutor        TutorProfile?
-	lessons      Lesson[] @relation("student")
-	createdAt	 DateTime @default(now())
-	updatedAt    DateTime @updatedAt
+	parent       ParentProfile?
+	student      StudentProfile?
+	createdAt	 DateTime 		 @default(now())
+	updatedAt    DateTime 		 @updatedAt
 }
 
 model TutorProfile {
@@ -29,6 +30,33 @@ model TutorProfile {
 	dispos		Availibility[]
 	experiences Experience[]
 	subjects    Course[]
+	lessons     Lesson[]
+	createdAt   DateTime       @default(now())
+	updatedAt   DateTime       @updatedAt
+}
+
+model ParentProfile {
+	id          Int              @id @default(autoincrement())
+	user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+	userId      Int              @unique
+	children	StudentProfile[]
+	phone		String?
+	city		String?
+	createdAt   DateTime         @default(now())
+	updatedAt   DateTime         @updatedAt
+}
+
+model StudentProfile {
+	id          Int            @id @default(autoincrement())
+	user        User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+	userId      Int            @unique
+	parent		ParentProfile? @relation(fields: [parentId], references: [id], onDelete: Cascade)
+	parentId	Int?
+	bio         String?
+	phone		String?
+	city		String?
+	birthDate   DateTime
+	level		Level?
 	lessons     Lesson[]
 	createdAt   DateTime       @default(now())
 	updatedAt   DateTime       @updatedAt
@@ -75,13 +103,13 @@ model Course {
 }
 
 model Lesson {
-	id        Int          @id @default(autoincrement())
-	student   User         @relation("student", fields: [studentId], references: [id], onDelete: Cascade)
+	id        Int            @id @default(autoincrement())
+	student   StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
 	studentId Int
-	tutor     TutorProfile @relation(fields: [tutorId], references: [id], onDelete: Cascade)
+	tutor     TutorProfile   @relation(fields: [tutorId], references: [id], onDelete: Cascade)
 	tutorId   Int
 	startsAt  DateTime
-	mode      Mode         @default(DOMICILE)
+	mode      Mode           @default(DOMICILE)
 	rating    Int?
 	review    String?
 }

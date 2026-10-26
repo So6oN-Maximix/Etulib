@@ -9,6 +9,7 @@
 	<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700&family=Instrument+Sans:wght@400;500;600&family=Kalam&display=swap" rel="stylesheet">
 	<link rel="stylesheet" href="/styles.css">
 	<script src="/JS/header.js" defer></script>
+    <script src="/JS/profils.js" defer></script>
 	<script src="/JS/student_profil.js" defer></script>
 </head>
 <body>
@@ -75,13 +76,22 @@
 
 			<section id="infos">
 				<h2>Mes informations</h2>
-				<form class="form" onsubmit="return false">
-					<label>Prénom<input type="text" value="Nadia"></label>
-					<label>Nom<input type="text" value="Benali"></label>
-					<label>Adresse e-mail<input type="email" value="nadia.benali@exemple.fr"></label>
-					<label>Téléphone<input type="tel" value="06 12 34 56 78"></label>
-					<label>Ville<input type="text" value="Saint-Étienne"></label>
-					<label>Niveau de l'élève<select><option>Seconde</option><option>Première</option><option>Terminale</option></select></label>
+				<form class="form" id="student-info">
+					<label>Prénom<input type="text" placeholder="Prénom" name="firstName"></label>
+					<label>Nom<input type="text" placeholder="Nom" name="lastName"></label>
+					<label>Adresse e-mail<input type="email" placeholder="votre.mail@exemple.fr" name="email"></label>
+					<label>Téléphone<input type="tel" placeholder="06 12 34 56 78" name="phone"></label>
+					<label>Ville<input type="text" placeholder="Votre ville" name="city"></label>
+					<label>
+						Niveau de l'élève
+						<select name="level">
+							<option value="NULL" selected>--- Niveau ---</option>
+							<option value="PRIMAIRE">Primaire</option>
+							<option value="COLLEGE">Collège</option>
+							<option value="LYCEE">Lycée</option>
+							<option value="SUP">Prépa et supérieur</option>
+						</select>
+					</label>
 					<button type="submit" class="btn-search">Enregistrer</button>
 				</form>
 			</section>
@@ -91,5 +101,6 @@
 <footer class="site-footer">
 	<div class="container copy" style="border:0;margin:0">&copy; 2026 Etulib. Tous droits réservés.</div>
 </footer>
+<div class="toasts" id="toasts" role="status" aria-live="polite"></div>
 </body>
 </html>
