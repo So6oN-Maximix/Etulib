@@ -1,47 +1,101 @@
-function addTiles(m) {
-    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '&copy; OpenStreetMap' }).addTo(m);
-}
-function addPrice(m, latlng, price) {
-    L.marker(latlng, { icon: L.divIcon({ className: 'price-pin', html: '<span>' + price + ' €</span>', iconSize: [0, 0] }) }).addTo(m);
-}
-
-var big = null, modal = document.getElementById('map-modal');
-function openMap() {
-    modal.hidden = false;
-    document.body.style.overflow = 'hidden';
-    if (!big) {
-        big = L.map('map').setView(center, 13);
-        addTiles(big);
-        addTutor(big, [45.4397, 4.3872], { initials: 'CM', name: 'Camille M.', subject: 'Mathématiques, lycée et prépa', rating: 4.9, reviews: 126, price: 32, text: "Agrégée, 8 ans d'expérience. Spécialité maths, terminale et prépa.", url: '/tutor' });
-        big.on('click', function () { document.getElementById('tutor-panel').hidden = true; });
+async function executeSearch(course, location) {
+    if (!course && !location) return;
+    const queryParams = new URLSearchParams({ course, location }).toString();
+    const searchBtn = document.querySelector("#research-form .btn-search");
+    searchBtn.classList.add("is-loading");
+    searchBtn.disabled = true;
+    try {
+        const response = await fetch(`/api/public/search-tutor?${queryParams}`);
+        const tutors = await response.json();
+        if (!response.ok) {
+            showToast(tutors.error || "Erreur lors de la recherche", "error");
+            return;
+        }
+        renderTutorsList(tutors);
+    } catch (error) {
+        console.error(error);
+        showToast("Erreur serveur", "error");
+    } finally {
+        searchBtn.classList.remove("is-loading");
+        searchBtn.disabled = false;
     }
-    setTimeout(function () { big.invalidateSize(); }, 50);
-}
-function closeMap() { modal.hidden = true; document.body.style.overflow = ''; }
-
-function addTutor(m, latlng, t) {
-	L.marker(latlng, { icon: L.divIcon({ className: 'price-pin', html: '<span>' + t.price + ' €</span>', iconSize: [0, 0] }) })
-		.addTo(m).on('click', function () { showTutor(t); });
-}
-function showTutor(t) {
-	var $ = function (id) { return document.getElementById(id); };
-	$('tp-avatar').textContent = t.initials;
-	$('tp-name').textContent = t.name;
-	$('tp-sub').textContent = t.subject;
-	$('tp-stars').style.setProperty('--r', t.rating);
-	$('tp-stars').setAttribute('aria-label', 'Note de ' + t.rating + ' sur 5');
-	$('tp-rating').textContent = t.rating + ' (' + t.reviews + ' avis)';
-	$('tp-price').textContent = t.price + ' €/heure';
-	$('tp-text').textContent = t.text;
-	$('tp-link').href = t.url;
-	$('tutor-panel').hidden = false;
 }
 
-var center = [45.4397, 4.3872]; // Saint-Étienne
-var mini = L.map('map-mini', { zoomControl: false, dragging: false, scrollWheelZoom: false, doubleClickZoom: false, boxZoom: false, keyboard: false, touchZoom: false, attributionControl: false }).setView(center, 12);
-L.control.attribution({ prefix: false }).addTo(mini);
-addTiles(mini);
-document.getElementById('map-card').addEventListener('click', openMap);
-document.getElementById('close-map').addEventListener('click', closeMap);
-document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeMap(); });
-document.getElementById('tp-close').addEventListener('click', function () { document.getElementById('tutor-panel').hidden = true; });
+function renderTutorsList(tutors) {
+    const tutorsListElem = document.querySelector(".results .tutors");
+    tutorsListElem.innerHTML = "";
+    tutors.forEach(tutor => addTutor(tutor, tutorsListElem));
+}
+
+function addTutor(tutor, selector) {
+    tutor.subjects.forEach(subject => {
+        const globalPoint = document.createElement("li");
+
+        const avatar = document.createElement("span");
+        avatar.classList.add("avatar");
+        avatar.textContent = `${tutor.user.firstName[0]}${tutor.user.lastName[0]}`.toUpperCase();
+
+        const tutorInfo = document.createElement("div");
+        tutorInfo.classList.add("who");
+        const name = document.createElement("h3");
+        name.textContent = `${tutor.user.firstName} ${tutor.user.lastName.toUpperCase()}`;
+        const bio = document.createElement("p");
+        bio.textContent = subject.title;
+        const tags = document.createElement("div");
+        tags.classList.add("tags");
+        tutorInfo.appendChild(name);
+        tutorInfo.appendChild(bio);
+        tutorInfo.appendChild(tags);
+
+        // TEMPORAIRE !
+        const notes = document.createElement("div");
+        notes.classList.add("meta");
+        notes.innerHTML = `
+            <span class="stars" style="--r:4.9" role="img" aria-label="Note de 4,9 sur 5"></span>
+            <span><b>4,9</b> <small>(126 avis)</small></span>
+        `;
+
+        const price = document.createElement("div");
+        price.classList.add("price");
+        price.innerHTML = `${subject.hourlyRate} €<small>/heure</small>`;
+
+        const tutorProfileLink = document.createElement("a");
+        tutorProfileLink.href = `/tutor?id=${parseInt(tutor.id)}`;
+        tutorProfileLink.classList.add("btn-line");
+        tutorProfileLink.textContent = "Voir les créneaux";
+
+        globalPoint.appendChild(avatar);
+        globalPoint.appendChild(tutorInfo);
+        globalPoint.appendChild(notes);
+        globalPoint.appendChild(price);
+        globalPoint.appendChild(tutorProfileLink);
+        selector.appendChild(globalPoint);
+    });
+}
+
+document.addEventListener("DOMContentLoaded", async () => {
+    const researchForm = document.getElementById("research-form");
+    const courseInput = researchForm.querySelector('input[name="course"]');
+    const locationInput = researchForm.querySelector('input[name="location"]');
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const course = urlParams.get("course") || "";
+    const location = urlParams.get("location") || "";
+
+    if (courseInput) courseInput.value = course;
+    if (locationInput) locationInput.value = location;
+
+    await executeSearch(course, location);
+
+    researchForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const dataForm = Object.fromEntries(new FormData(researchForm));
+        
+        const newParams = new URLSearchParams({
+            course: dataForm.course || "",
+            location: dataForm.location || ""
+        });
+
+        await executeSearch(dataForm.course, dataForm.location);
+    });
+});

@@ -27,6 +27,8 @@ model TutorProfile {
 	user        User           @relation(fields: [userId], references: [id], onDelete: Cascade)
 	userId      Int            @unique
 	bio         String?
+	phone       String?
+	city		Int?
 	dispos		Availibility[]
 	experiences Experience[]
 	subjects    Course[]
@@ -56,6 +58,8 @@ model StudentProfile {
 	phone		String?
 	city		String?
 	birthDate   DateTime
+	address		Address?       @relation(fields: [addressId], references: [id])
+	addressId	Int?
 	level		Level?
 	lessons     Lesson[]
 	createdAt   DateTime       @default(now())
@@ -112,6 +116,20 @@ model Lesson {
 	mode      Mode           @default(DOMICILE)
 	rating    Int?
 	review    String?
+}
+
+model Address {
+	id         Int              @id @default(autoincrement())
+	street     String
+	complement String?
+	postalCode String
+	city       String
+	cityCode   String?
+	latitude   Float?
+	longitude  Float?
+	students   StudentProfile[]
+	createdAt  DateTime         @default(now())
+	updatedAt  DateTime         @updatedAt
 }
 
 enum Role {

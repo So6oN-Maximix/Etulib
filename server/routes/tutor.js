@@ -42,12 +42,31 @@ function parseAvailibility(list) {
 	return out;
 }
 
+function parseTutor(body) {
+    const { firstName, lastName, email, phone, city } = body
+    const phoneValidation = /^(?:0|\+33)[1-9](?:[ .-]?\d{2}){4}$/;
+    const emailValidation = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!phoneValidation.test(phone) || !emailValidation.test(email) || !firstName || !lastName || (city && !(typeof city === "number"))) return null;
+    return { firstName, lastName, email, phone: normalizePhone(phone), city }
+}
+
 function formatMinutes(hour) {
     const hourSplit = hour.split(":");
     return parseInt(hourSplit[0]) * 60 + parseInt(hourSplit[1]);
 }
 
 function formatHours(minutes) { return `${Math.floor(minutes / 60).toString().padStart(2, "0")}:${(minutes % 60).toString().padStart(2, "0")}`; }
+
+function normalizePhone(input) {
+	const digits = String(input).replace(/[\s.\-()]/g, "").replace(/^(\+33|0033|0)/, "");
+	return /^[1-9]\d{8}$/.test(digits) ? "+33" + digits : null;
+}
+
+function formatPhone(normalizedPhone) {
+    const cleanedPhone = normalizedPhone.replace("+33", "");
+    const phoneParts = cleanedPhone.match(/^.|.{2}/g);
+    return `0${phoneParts.join(" ")}`;
+}
 
 async function updateFromDb(req, res, table, parseFunction, SELECT) {
     try {
@@ -267,6 +286,45 @@ router.get("/get-availibility", requireAuth(["TUTOR"]), async (req, res) => {
 		console.error(error);
 		res.status(500).json({ error: "Erreur serveur" });
 	}
+});
+
+router.get("/get-info", requireAuth(["TUTOR"]), async (req, res) => {
+    try {
+        const tutorInfos = await prisma.tutorProfile.findUnique({
+            where: { userId: req.session.user.id },
+            select: {
+                id: true, phone: true, city: true,
+                user: { select: { firstName: true, lastName: true, email: true, createdAt: true } }
+            }
+        });
+        if (!tutorInfos) return res.status(404).json({ error: "Élève introuvable" });
+        const { user, ...rest } = tutorInfos;
+        res.json({ ...rest, ...user, phone: rest.phone ? formatPhone(rest.phone) : "", email: user.email ? user.email : req.session.user.email });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Erreur serveur" });
+    }
+});
+
+router.patch("/perso-info", requireAuth(["TUTOR"]), async (req, res) => {
+    try {
+        const data = parseTutor(req.body);
+        if (!data) return res.status(400).json({ error: "Champs invalides" });
+        const { countUser } = await prisma.user.updateMany({
+            where: { id: req.session.user.id },
+            data: { email: data.email, firstName: data.firstName, lastName: data.lastName}
+        });
+        if (countUser === 0) return res.status(404).json({ error: "Profil utilisateur introuvable" });
+        const { countTutor } = await prisma.tutorProfile.updateMany({
+            where: { userId: req.session.user.id },
+            data: { phone: data.phone, city: data.city }
+        });
+        if (countTutor === 0) return res.status(404).json({ error: "Profil professeur introuvable" });
+        res.status(200).json({ message: "Informations enregistrée" });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Erreur serveur" });
+    }
 });
 
 module.exports = router;

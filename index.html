@@ -9,6 +9,8 @@
 	<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700&family=Instrument+Sans:wght@400;500;600&family=Kalam&display=swap" rel="stylesheet">
 	<link rel="stylesheet" href="/styles.css">
 	<script src="/JS/header.js" defer></script>
+	<script src="/JS/find_cities.js" defer></script>
+	<script src="/JS/index.js" defer></script>
 </head>
 <body>
 
@@ -35,11 +37,17 @@
 				<h1>Révélez votre potentiel avec le bon professeur.</h1>
 				<p>Réservez des cours de soutien scolaire en ligne ou près de chez vous, en quelques clics et en toute confiance.</p>
 
-				<form class="search-box" role="search" onsubmit="return false">
-					<label class="field"><span>Matière</span><input type="text" placeholder="Maths, anglais, philosophie…"></label>
-					<label class="field"><span>Lieu</span><input type="text" placeholder="Ville, code postal ou en ligne"></label>
+				<form class="search-box" role="search" id="research-form">
+					<label class="field">
+						<span>Matière</span>
+						<input type="text" placeholder="Maths, anglais, philosophie…" name="course">
+					</label>
+					<label class="field" style="position: relative;">
+						<span>Lieu</span>
+						<input type="text" id="city-input" placeholder="Ville, code postal ou en ligne" autocomplete="off" name="location">
+						<ul id="city-suggestions" class="suggestions-list" hidden></ul>
+					</label>
 					<button type="submit" class="btn-search">Rechercher</button>
-					<span class="note" aria-hidden="true">Première séance sans engagement</span>
 				</form>
 
 				<div class="levels">

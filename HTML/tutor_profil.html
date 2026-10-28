@@ -48,12 +48,12 @@
 	<div class="container layout">
 		<aside class="side-nav" aria-label="Mon espace">
 			<a href="#apercu" aria-current="page">Aperçu</a>
-			<a href="#demandes">Demandes</a>
 			<a href="#cours">Prochains cours</a>
 			<a href="#dispos">Disponibilités</a>
 			<a href="#fiche">Ma fiche publique</a>
 			<a href="#parcours">Mon parcours</a>
 			<a href="#mes-cours">Mes Cours</a>
+			<a href="#mes-infos">Mes Infos</a>
 			<a href="#">Paiements</a>
 		</aside>
 
@@ -65,14 +65,6 @@
 					<div class="stat"><b>212 €</b>gagnés ce mois-ci</div>
 					<div class="stat"><b>4,9</b>sur 5 (126 avis)</div>
 				</div>
-			</section>
-
-			<section id="demandes">
-				<h2>Demandes de réservation</h2>
-				<ul class="lessons">
-					<li><div class="date"><b>15</b>jeu. oct.</div><div class="who"><h3>Léa B., seconde</h3><p>Mathématiques, 18 h à 19 h, en ligne</p></div><a href="#" class="btn-line">Accepter</a><a href="#" class="link-quiet">Refuser</a></li>
-					<li><div class="date"><b>17</b>sam. oct.</div><div class="who"><h3>Hugo T., terminale</h3><p>Préparation au bac, 10 h à 11 h, à domicile</p></div><a href="#" class="btn-line">Accepter</a><a href="#" class="link-quiet">Refuser</a></li>
-				</ul>
 			</section>
 
 			<section id="cours">
@@ -174,6 +166,18 @@
 					</div>
                 </form>
             </section>
+
+			<section id="mes-infos">
+				<h2>Mes informations</h2>
+				<form class="form" id="tutor-info">
+					<label>Prénom<input type="text" placeholder="Prénom" name="firstName"></label>
+					<label>Nom<input type="text" placeholder="Nom" name="lastName"></label>
+					<label class="full">Adresse e-mail<input type="email" placeholder="votre.mail@exemple.fr" name="email"></label>
+					<label>Téléphone<input type="tel" placeholder="06 12 34 56 78" name="phone"></label>
+					<label>Ville<input type="text" placeholder="Votre ville" name="city"></label>
+					<button type="submit" class="btn-search">Enregistrer</button>
+				</form>
+			</section>
 		</div>
 	</div>
 

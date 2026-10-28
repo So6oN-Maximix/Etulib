@@ -10,6 +10,7 @@
 	<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 	<link rel="stylesheet" href="/styles.css">
 	<script src="/JS/header.js" defer></script>
+	<script src="/JS/find_cities.js" defer></script>
 	<script src="/JS/research.js" defer></script>
 </head>
 <body>
@@ -33,9 +34,16 @@
 		<div class="container">
 			<div class="page-head-inner">
 				<h1>Trouver un professeur</h1>
-				<form class="search-box" role="search" onsubmit="return false">
-					<label class="field"><span>Matière</span><input type="text" value="Mathématiques"></label>
-					<label class="field"><span>Lieu</span><input type="text" value="Saint-Étienne"></label>
+				<form class="search-box" role="search" id="research-form">
+					<label class="field">
+						<span>Matière</span>
+						<input type="text" value="Mathématiques" placeholder="Maths, anglais, philosophie…" name="course">
+					</label>
+					<label class="field" style="position: relative;">
+						<span>Lieu</span>
+						<input type="text" id="city-input" value="Saint-Étienne" placeholder="Ville, code postal ou en ligne" name="location">
+						<ul id="city-suggestions" class="suggestions-list" hidden></ul>
+					</label>
 					<button type="submit" class="btn-search">Rechercher</button>
 				</form>
 			</div>
@@ -44,10 +52,6 @@
 
 	<div class="container layout">
 		<aside class="filters" aria-label="Filtres">
-			<div class="map-card" id="map-card">
-				<div id="map-mini" class="map-mini"></div>
-				<button type="button" class="btn-map" id="open-map">Afficher sur la carte</button>
-			</div>
 			<fieldset><legend>Niveau</legend>
 				<label><input type="checkbox"> Primaire</label>
 				<label><input type="checkbox"> Collège</label>
@@ -114,23 +118,6 @@
 		</section>
 	</div>
 </main>
-<div class="map-modal" id="map-modal" role="dialog" aria-label="Carte des professeurs" hidden>
-	<div class="map-modal-bar"><strong>Professeurs à Saint-Étienne</strong><button type="button" class="btn-line" id="close-map">Retour à la liste</button></div>
-	<div class="map-wrap">
-	<div id="map" class="map"></div>
-		<aside class="tutor-panel" id="tutor-panel" hidden>
-			<button type="button" class="tp-close" id="tp-close" aria-label="Fermer">×</button>
-			<span class="avatar" id="tp-avatar"></span>
-			<h3 id="tp-name"></h3>
-			<p id="tp-sub"></p>
-			<div class="meta"><span class="stars" id="tp-stars" role="img"></span><span id="tp-rating"></span></div>
-			<div class="price" id="tp-price"></div>
-			<p id="tp-text"></p>
-			<a href="#" class="btn-line" id="tp-link">Voir le profil</a>
-		</aside>
-	</div>
-</div>
 <footer class="site-footer"><div class="container copy" style="border:0;margin:0">&copy; 2026 Etulib. Tous droits réservés.</div></footer>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </body>
 </html>

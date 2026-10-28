@@ -1,4 +1,5 @@
 function updateHeader(tutorData) {
+    console.log(tutorData);
     const docHeader = document.querySelector(".page-head-inner");
     docHeader.querySelector(".avatar").textContent = `${tutorData.firstName[0]}${tutorData.lastName[0]}`.toUpperCase();
     docHeader.querySelector("h1").textContent = `${tutorData.firstName} ${tutorData.lastName.toUpperCase()}`;
@@ -279,6 +280,42 @@ function processModals(form, addBtn, cancelBtn) {
     };
 }
 
+async function loadInfos(tutorData) {
+    tutorData.city = (await formatCityName(tutorData.city)).nom;
+    const toUpdate = ["firstName", "lastName", "email", "phone", "city"];
+    toUpdate.forEach(field => document.getElementById("mes-infos").querySelector(`input[name="${field}"]`).value = tutorData[field]);
+}
+
+async function formatCityName(codeInsee) {
+    const cached = localStorage.getItem("insee_code");
+    if (cached && parseInt(cached.code) === codeInsee) return JSON.parse(cached);
+
+    try {
+        const res = await fetch(`https://geo.api.gouv.fr/communes/${codeInsee}`);
+        const data = await res.json();
+        localStorage.setItem("insee_code", JSON.stringify(data));
+        return data;
+    } catch (err) {
+        console.error("Erreur API Geo:", err);
+    }
+}
+
+async function verifyCityName(name) {
+	if (typeof name !== "string" || name.length < 2 || name.length > 100) return null;
+	const url = new URL("https://geo.api.gouv.fr/communes");
+	url.searchParams.set("nom", name);
+	url.searchParams.set("fields", "nom,code,codesPostaux,centre");
+	url.searchParams.set("limit", "5");
+	const res = await fetch(url);
+	if (!res.ok) throw new Error("API commune indisponible");
+
+	const matches = (await res.json()).filter(c => normalize(c.nom) === normalize(name));
+    console.log(matches);
+	return matches.length === 1 ? matches[0] : null;
+}
+
+const normalize = s => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+
 const addCourseBtn = document.getElementById("add-course");
 const courseForm = document.getElementById("course-form");
 const courseFormCancel = document.getElementById("course-form-cancel");
@@ -294,6 +331,8 @@ const pathFormCancel = document.getElementById("path-form-cancel");
 const bioForm = document.getElementById("bio-form");
 const savePlanner = document.getElementById("save-planner");
 
+const tutorInfoForm = document.getElementById("tutor-info");
+
 let COURSES = [];
 let EXPERIENCES = [];
 let PLANNER = [];
@@ -305,7 +344,7 @@ if (new URLSearchParams(location.search).has("welcome")) {
 document.getElementById("onboarding-later").addEventListener("click", e => { e.preventDefault(); onboardingModal.close(); });
 
 document.addEventListener("DOMContentLoaded", async () => {
-    const getTutorInfo = await fetch("/api/auth/me");
+    const getTutorInfo = await fetch("/api/tutor/get-info", { method: "GET" });
     const tutorData = await getTutorInfo.json();
 
     COURSES = await getCourses();
@@ -313,10 +352,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     PLANNER = loadDispos();
 
     PLANNER.set(await getAvailibilities());
-    updateHeader(tutorData.user);
+    updateHeader(tutorData);
     loadBio();
     loadExperiences();
     loadCourses();
+    loadInfos(tutorData);
     initScrollSpy();
 
     processModals(courseForm, addCourseBtn, courseFormCancel);
@@ -381,3 +421,29 @@ savePlanner.onclick = async () => {
         showToast("Erreur serveur, réessayez plus tard", "error");
     }
 };
+
+tutorInfoForm.addEventListener("submit", async event => {
+    event.preventDefault();
+    const dataForm = Object.fromEntries(new FormData(tutorInfoForm));
+    try {
+        const cityData = await verifyCityName(dataForm.city);
+        if (cityData) {
+            dataForm.city = parseInt(cityData.code);
+            localStorage.setItem("insee_code", JSON.stringify(cityData));
+        }
+        const sendInfos = await fetch("/api/tutor/perso-info", {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(dataForm)
+        });
+        const data = await sendInfos.json();
+        if (!sendInfos.ok) {
+            showToast(data.error, "error");
+            return;
+        }
+        showToast(data.message);
+    } catch (error) {
+        console.error(error);
+        showToast("Erreur serveur, réessayez plus tard", "error");
+    }
+});
