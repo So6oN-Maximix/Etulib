@@ -30,6 +30,7 @@ app.use("/api/tutor", require("./routes/tutor"));
 app.use("/api/public", require("./routes/public"));
 app.use("/api/student", require("./routes/student"));
 app.use("/api/parent", require("./routes/parent"));
+app.use("/api/lesson", require("./routes/lesson"));
 
 app.get("/", (req, res) => res.sendFile(path.join(root, "index.html")));
 

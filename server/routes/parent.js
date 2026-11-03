@@ -140,4 +140,135 @@ router.get("/get-children", requireAuth(["PARENT"]), async (req, res) => {
 	}
 });
 
+router.post("/get-next-lessons", requireAuth(["PARENT"]), async (req, res) => {
+    try {
+        const data = req.body;
+        if (!Array.isArray(data) || data.length === 0) return res.status(400).json({ error: "Liste d'enfants invalide" });
+        let nextLessons = [];
+        for (const id of data) {
+            const lessons = await prisma.lesson.findMany({
+                where: {
+                    student: { userId: id },
+                    startDate: { gte: new Date(Date.now()) }
+                },
+                orderBy: { startDate: "asc" },
+                select: {
+                    id: true,
+                    startDate: true,
+                    student: {
+                        select: {
+                            user: {
+                                select: { firstName: true }
+                            }
+                        }
+                    },
+                    course: {
+                        select: {
+                            title: true,
+                            subject: true,
+                            duration: true,
+                            mode: true
+                        }
+                    },
+                    tutor: {
+                        select: {
+                            user: {
+                                select: {
+                                    firstName: true,
+                                    lastName: true
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            nextLessons = [...nextLessons, ...lessons];
+        }
+        res.status(200).json({ nextLessons });
+    } catch (error) {
+		console.error(error);
+		res.status(500).json({ error: "Erreur serveur" });
+	}
+});
+
+router.post("/get-tutors", requireAuth(["PARENT"]), async (req, res) => {
+    try {
+        const data = req.body;
+        if (!Array.isArray(data) || data.length === 0) return res.status(400).json({ error: "Liste d'enfants invalide" });
+        const rawTutors = await prisma.tutorProfile.findMany({
+            where: {
+                lessons: {
+                    some: {
+                        student: { userId: { in: data } }
+                    }
+                }
+            },
+            select: {
+                id: true,
+                user: {
+                    select: {
+                        firstName: true,
+                        lastName: true
+                    }
+                },
+                lessons: {
+                    where: {
+                        student: { userId: { in: data } }
+                    },
+                    select: {
+                        student: {
+                            select: {
+                                userId: true,
+                                user: { select: { firstName: true } }
+                            }
+                        },
+                        course: {
+                            select: { subject: true }
+                        }
+                    }
+                }
+            }
+        });
+
+        const tutors = rawTutors.map(tutor => {
+            const childrenMap = {};
+            tutor.lessons.forEach(lesson => {
+                const childId = lesson.student.userId;
+                const childName = lesson.student.user.firstName;
+                const subject = lesson.course.subject;
+
+                if (!childrenMap[childId]) {
+                    childrenMap[childId] = {
+                        childUserId: childId,
+                        childFirstName: childName,
+                        subjects: new Set(),
+                        lessonCount: 0
+                    };
+                }
+                childrenMap[childId].subjects.add(subject);
+                childrenMap[childId].lessonCount += 1;
+            });
+
+            const childrenDetails = Object.values(childrenMap).map(child => ({
+                childUserId: child.childUserId,
+                childFirstName: child.childFirstName,
+                subjects: Array.from(child.subjects),
+                lessonCount: child.lessonCount
+            }));
+            
+            return {
+                id: tutor.id,
+                firstName: tutor.user.firstName,
+                lastName: tutor.user.lastName,
+                childrenDetails,
+                totalLessons: tutor.lessons.length
+            };
+        });
+        res.status(200).json({ tutors });
+    } catch (error) {
+		console.error(error);
+		res.status(500).json({ error: "Erreur serveur" });
+	}
+});
+
 module.exports = router;

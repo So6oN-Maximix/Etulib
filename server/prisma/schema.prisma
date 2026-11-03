@@ -101,6 +101,7 @@ model Course {
 	hourlyRate Int
 	duration   Int
 	mode       Mode           @default(DOMICILE)
+	lesson	   Lesson[]
 	createdAt  DateTime       @default(now())
 
 	@@index([tutorId])
@@ -112,10 +113,13 @@ model Lesson {
 	studentId Int
 	tutor     TutorProfile   @relation(fields: [tutorId], references: [id], onDelete: Cascade)
 	tutorId   Int
-	startsAt  DateTime
-	mode      Mode           @default(DOMICILE)
+	course    Course		 @relation(fields: [courseId], references: [id], onDelete: Cascade)
+	courseId  Int
+	startDate DateTime
 	rating    Int?
 	review    String?
+
+	@@unique([tutorId, startDate])
 }
 
 model Address {

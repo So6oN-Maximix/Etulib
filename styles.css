@@ -1163,6 +1163,25 @@ select {
 	background: var(--tint)
 }
 
+.booking .slots {
+    max-height: 180px;
+    overflow-y: auto;
+    padding-right: 6px;
+}
+
+.booking .slots::-webkit-scrollbar {
+    width: 5px;
+}
+
+.booking .slots::-webkit-scrollbar-thumb {
+    background-color: #cbd5e1;
+    border-radius: 10px;
+}
+
+.booking .slots::-webkit-scrollbar-track {
+    background: transparent;
+}
+
 .booking .btn-search {
 	padding: .85rem;
 	text-align: center;

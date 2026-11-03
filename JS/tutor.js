@@ -33,6 +33,7 @@ function updateCourses(subjects, availibility, selector) {
     subjects.forEach(subject => {
         const globalPoint = document.createElement("li");
         globalPoint.setAttribute("data-duration", subject.duration);
+        globalPoint.setAttribute("data-id", subject.id);
 
         const infoDiv = document.createElement("div");
         infoDiv.classList.add("who");
@@ -69,10 +70,12 @@ function updateAvailibility(subject, duration, availibility, selector) {
         booking.classList.add("visible");
         if (matchMedia("(max-width:900px)").matches) booking.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion:reduce)").matches ? "auto" : "smooth", block: "start" });
     }
+    booking.setAttribute("data-id", subject.id);
     document.getElementById("booking-course").textContent = subject.title;
     document.getElementById("booking-course").setAttribute("data-duration", duration);
     document.getElementById("to-book-price").innerHTML = `${subject.hourlyRate} €<small>/heure</small>`;
     document.getElementById("booking-info").textContent = courseInfo(subject);
+    document.getElementById("booking-info").setAttribute("data-mode", subject.mode);
     updateAvailibilities(availibility, duration, selector);
 }
 
@@ -203,13 +206,6 @@ function modeTags(mode) {
 	return box;
 }
 
-function formatHours(minutes) { return `${Math.floor(minutes / 60).toString().padStart(2, "0")}:${(minutes % 60).toString().padStart(2, "0")}`; }
-function formatDuration(minutes) {
-	if (minutes < 60) return `${minutes} min`;
-	const h = Math.floor(minutes / 60), m = minutes % 60;
-	return m ? `${h} h ${String(m).padStart(2, "0")}` : `${h} h`;
-}
-
 let currentMonday = null;
 let initialMonday = null;
 
@@ -221,20 +217,50 @@ const reserveBtn = document.querySelector(".btn-search");
 document.addEventListener("DOMContentLoaded", async () => {
     const tutorId = new URLSearchParams(location.search).get("id");
     const res = await fetch(`/api/public/tutor/${encodeURIComponent(tutorId)}`, { method: "GET" });
+    const data = await res.json();
     if (!res.ok || !tutorId) {
-        const data = await res.json();
         console.error(data.error);
         return window.location.href = "/tutor_not_found";
     }
-    
-    updatePage((await res.json()).tutor);
+    updatePage(data.tutor);
 });
 
-reserveBtn.onclick = event => {
+reserveBtn.onclick = async event => {
     event.preventDefault();
     const selectedHours = document.querySelector(".selected");
+    if (!selectedHours) {
+        showToast("Veuillez sélectionnez un créneau", "error");
+        return;
+    }
+    const hoursText = selectedHours.textContent.split(":");
     const reserveDate = new Date(currentMonday);
-    reserveDate.setDate(reserveDate.getDate() + selectedHours.parentElement.getAttribute("data-day"));
-    console.log(selectedHours);
-    console.log(currentMonday);
+    reserveDate.setDate(reserveDate.getDate() + parseInt(selectedHours.parentElement.getAttribute("data-day")));
+    reserveDate.setHours(parseInt(hoursText[0]), parseInt(hoursText[1]));
+    console.log(reserveDate);
+    try {
+        const getConnection = await fetch("/api/auth/me", { method: "GET" });
+        if (!getConnection.ok) {
+            showToast("Veuillez vous connecter pour réserver", "error");
+            return;
+        }
+        const saveLesson = await fetch("/api/lesson/reserve", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                tutorId: parseInt(new URLSearchParams(location.search).get("id")),
+                reservation: reserveDate,
+                courseId: parseInt(document.querySelector(".booking").getAttribute("data-id"))
+            })
+        });
+        const data = await saveLesson.json();
+        if (!saveLesson.ok) {
+            showToast(data.error || "Erreur lors de la réservation, réessayez", "error");
+            return;
+        }
+        sessionStorage.setItem("bookingData", JSON.stringify(data.saveLesson));
+        window.location.href = "/success_reserve";
+    } catch (error) {
+        console.error(error);
+        showToast("Erreur server", "error");
+    }
 };
