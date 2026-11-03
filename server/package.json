@@ -21,6 +21,8 @@
     "helmet": "^8.3.0"
   },
   "devDependencies": {
-    "prisma": "^6.19.3"
+    "@mermaid-js/mermaid-cli": "^11.17.1",
+    "prisma": "^6.19.3",
+    "prisma-erd-generator": "^3.2.1"
   }
 }

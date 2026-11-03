@@ -3,6 +3,12 @@ generator client {
 	binaryTargets = ["native", "debian-openssl-1.0.x", "windows"]
 }
 
+generator erd {
+  provider = "prisma-erd-generator"
+  output   = "ERD.svg"
+  theme    = "forest"
+}
+
 datasource db {
 	provider = "postgresql"
 	url      = env("DATABASE_URL")
