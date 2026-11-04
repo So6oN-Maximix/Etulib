@@ -89,4 +89,55 @@ router.get("/get-next", requireChildren, async (req, res) => {
 	}
 });
 
+router.post("/get-info", async (req, res) => {
+    try {
+        let { id } = req.body;
+        if (typeof id !== "number") id = parseInt(id);
+        const lessonInfo = await prisma.lesson.findUnique({
+            where: { id: id },
+            select: {
+                id: true,
+                startDate: true,
+                course: {
+                    select: {
+                        title: true,
+                        subject: true,
+                        level: true,
+                        bio: true,
+                        hourlyRate: true,
+                        duration: true,
+                        mode: true
+                    }
+                },
+                tutor: {
+                    select: {
+                        id: true,
+                        user: {
+                            select: {
+                                firstName: true,
+                                lastName: true
+                            }
+                        }
+                    }
+                },
+                student: {
+                    select: {
+                        user: {
+                            select: {
+                                firstName: true,
+                                lastName: true
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        lessonInfo.connectedRole = req.session.user.role;
+        res.status(200).json({ lessonInfo });
+    } catch (error) {
+		console.error(error);
+		res.status(500).json({ error: "Erreur serveur" });
+	}
+});
+
 module.exports = router;

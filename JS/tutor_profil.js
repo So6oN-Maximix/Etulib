@@ -312,7 +312,15 @@ async function loadLessons() {
     try {
         const getNextLessons = await fetch("/api/tutor/get-lessons", { method: "GET" });
         const data = await getNextLessons.json();
+
         const lessonSection = document.getElementById("cours");
+        const openCalendarBtn = lessonSection.querySelector("button");
+        const calendarDialog = document.getElementById("calendar-modal");
+        openCalendarBtn.onclick = () => {
+            renderWeek(data.tutorLessons);
+            calendarDialog.showModal();
+        };
+
         lessonSection.querySelector(".lessons").innerHTML = "";
         data.tutorLessons.forEach(lesson => addLesson(lesson, lessonSection.querySelector(".lessons")));
     } catch (error) { console.error(error) }
@@ -339,7 +347,7 @@ function addLesson(lesson, selector) {
     lessonInfo.appendChild(time);
 
     const detailsLink = document.createElement("a");
-    detailsLink.href = "#";
+    detailsLink.href = `/course_details?id=${lesson.id}`;
     detailsLink.classList.add("btn-line");
     detailsLink.textContent = "Details";
     const cancelLink = document.createElement("a");

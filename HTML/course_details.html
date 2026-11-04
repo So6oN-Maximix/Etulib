@@ -9,6 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700&family=Instrument+Sans:wght@400;500;600&family=Kalam&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/styles.css">
     <script src="/JS/header.js" defer></script>
+	<script src="/JS/course_details.js" defer></script>
 </head>
 <body>
 <header class="site-header">
@@ -28,10 +29,10 @@
 </header>
 
 <main>
-	<section class="page-head seyes">
+	<section class="page-head seyes" id="header">
 		<div class="container">
 			<div class="page-head-inner lesson-head">
-				<p class="crumb"><a href="/student_profil">Mes cours</a> / Mathématiques</p>
+				<p class="crumb"><a href="#">Mes cours</a> / Mathématiques</p>
 				<h1>Préparation au bac de maths</h1>
 				<p>Mercredi 4 novembre 2026, de 17 h 30 à 19 h 00</p>
 				<div class="tags"><span class="status">À venir</span><span>En ligne</span><span>1 h 30</span></div>
@@ -43,7 +44,7 @@
 		<div class="account">
 			<section>
 				<h2>Description</h2>
-				<p class="prose">Révisions ciblées pour le bac : fonctions, suites et probabilités, avec des annales corrigées en séance. Ce cours s'adresse aux élèves de terminale, mais convient aussi aux élèves de première qui veulent prendre de l'avance.</p>
+				<p class="prose"></p>
 			</section>
 
 			<section id="documents">
@@ -61,35 +62,56 @@
 					<li>
 						<span class="file-ext">PDF</span>
 						<div class="who"><h3>Exercices_fonctions_affines.pdf</h3><p>Reçu de Camille M. le 2 novembre · 1,2 Mo</p></div>
-						<div class="course-actions"><a href="#" class="btn-line">Télécharger</a></div>
+						<div class="course-actions">
+							<a href="#" class="btn-line">Télécharger</a>
+							<span class="btn-trash-placeholder" aria-hidden="true"></span>
+						</div>
 					</li>
 					<li>
 						<span class="file-ext">JPG</span>
 						<div class="who"><h3>Correction_exercice_4.jpg</h3><p>Envoyé par vous le 3 novembre · 840 Ko</p></div>
-						<div class="course-actions"><a href="#" class="btn-line">Télécharger</a><a href="#" class="link-quiet">Supprimer</a></div>
+						<div class="course-actions">
+							<a href="#" class="btn-line">Télécharger</a>
+							<button type="button" class="btn-trash" aria-label="Supprimer le document" title="Supprimer">
+								<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+									<polyline points="3 6 5 6 21 6"></polyline>
+									<path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+									<line x1="10" y1="11" x2="10" y2="17"></line>
+									<line x1="14" y1="11" x2="14" y2="17"></line>
+								</svg>
+							</button>
+						</div>
 					</li>
 					<li>
 						<span class="file-ext">DOC</span>
 						<div class="who"><h3>Plan_de_revisions.docx</h3><p>Reçu de Camille M. le 3 novembre · 56 Ko</p></div>
-						<div class="course-actions"><a href="#" class="btn-line">Télécharger</a></div>
+						<div class="course-actions">
+							<a href="#" class="btn-line">Télécharger</a>
+							<span class="btn-trash-placeholder" aria-hidden="true"></span>
+						</div>
 					</li>
 				</ul>
 				<p class="empty" id="no-docs" hidden>Aucun document pour le moment. Déposez le premier ci-dessus.</p>
 			</section>
 
-			<section id="avis" hidden>   <!-- à afficher une fois le cours terminé -->
+			<section id="avis">
 				<h2>Votre avis</h2>
-				<form class="form" onsubmit="return false">
-					<label>Note
-						<select name="rating"><option value="5">5 sur 5</option><option value="4">4 sur 5</option><option value="3">3 sur 5</option><option value="2">2 sur 5</option><option value="1">1 sur 5</option></select>
-					</label>
+				<form class="form" id="review-form" onsubmit="return false">
+					<div class="full star-field">
+						<span class="star-label">Note</span>
+						<div class="star-picker-wrap">
+							<div class="stars star-picker" id="star-picker" style="--r:0" aria-label="Choisir une note sur 5"></div>
+							<span class="rating-display" id="rating-display">0.0 / 5</span>
+							<input type="hidden" name="rating" id="rating-input" value="0" required>
+						</div>
+					</div>
 					<label class="full">Commentaire<textarea name="review" placeholder="Comment s'est passé le cours ?"></textarea></label>
 					<button type="submit" class="btn-search">Publier mon avis</button>
 				</form>
 			</section>
 		</div>
 
-		<aside class="booking lesson-aside visible" aria-label="Informations du cours" style="overflow-y: hidden;">
+		<aside class="booking lesson-aside visible" aria-label="Informations du cours" style="overflow-y: hidden;" id="lesson-info">
 			<h3>Informations du cours</h3>
 			<dl class="facts">
 				<div><dt>Matière</dt><dd>Mathématiques (Lycée)</dd></div>
@@ -105,7 +127,7 @@
 				<div><b>Camille M.</b><small>Professeure de mathématiques</small></div>
 			</div>
 			<a href="#" class="btn-search" id="join-lesson">Rejoindre la séance</a>
-			<a href="/tutor?id=1" class="btn-line">Voir la fiche du professeur</a>
+			<a href="#" class="btn-line">Voir la fiche du professeur</a>
 			<a href="#" class="link-quiet" id="cancel-lesson">Annuler le cours</a>
 		</aside>
 	</div>
