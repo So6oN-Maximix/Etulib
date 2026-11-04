@@ -1992,3 +1992,103 @@ button.btn-line:hover{background:var(--ink);color:#fff}
         transform: rotate(360deg);
     }
 }
+
+/* page de détail d'un cours */
+.lesson-head .tags span{background:#fff}
+
+/* carte d'informations à droite */
+.lesson-aside{max-height:calc(100vh - 7rem);overflow-y:auto}
+.facts{margin:0 0 .5rem;border-top:1px solid var(--line)}
+.facts > div{display:flex;justify-content:space-between;align-items:baseline;gap:1rem;padding:.55rem 0;border-bottom:1px solid var(--line)}
+.facts dt{font-size:.9rem;color:var(--muted)}
+.facts dd{font-weight:600;color:var(--ink);text-align:right}
+.facts .wide{flex-direction:column;gap:.15rem}
+.facts .wide dd{text-align:left}
+.tutor-mini{display:flex;align-items:center;gap:.8rem}
+.tutor-mini small{display:block;color:var(--muted)}
+.booking .btn-line{text-align:center}
+
+/* documents */
+.dropzone{position:relative;display:flex;flex-direction:column;align-items:center;gap:.25rem;margin-bottom:1.5rem;padding:2rem 1.5rem;text-align:center;background:#fff;border:1.5px dashed var(--ink);border-radius:6px;color:var(--muted);cursor:pointer;transition:background .15s}
+.dropzone strong{font-family:'Bricolage Grotesque',sans-serif;font-size:1.1rem;color:var(--ink)}
+.dropzone:hover,.dropzone.over,.dropzone:focus-within{background:var(--tint)}
+.dropzone input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.docs li{grid-template-columns:auto minmax(0,1fr) auto}
+.docs .who h3{font-size:1.05rem;overflow-wrap:anywhere}
+.file-ext{display:grid;place-items:center;width:44px;height:52px;border:1.5px solid var(--ink);border-radius:4px;background:var(--paper);font:700 .7rem 'Bricolage Grotesque',sans-serif;color:var(--ink)}
+
+@media(max-width:900px){.lesson-aside{max-height:none;overflow:visible}}
+@media(max-width:720px){.docs li{grid-template-columns:auto 1fr}.docs .course-actions{grid-column:1/-1}}
+
+/* messagerie plein écran, façon Messenger */
+body.messages-page{display:flex;flex-direction:column;height:100vh;height:100dvh;overflow:hidden}
+.messages-page .site-header{flex-shrink:0}
+.messages-main{flex:1;min-height:0;display:grid;grid-template-rows:minmax(0,1fr)}
+.inbox{display:grid;grid-template-columns:340px minmax(0,1fr);grid-template-rows:minmax(0,1fr);min-height:0;background:#fff;overflow:hidden}
+
+/* liste des conversations */
+.inbox-side{display:flex;flex-direction:column;min-height:0;border-right:1px solid var(--line)}
+.inbox-side-head{flex-shrink:0;padding:1rem 1rem .8rem}
+.inbox-side-head h1{margin-bottom:.7rem;font-size:1.5rem}
+.inbox-side-head input{width:100%;padding:.55rem .9rem;border:1px solid var(--line);border-radius:999px;background:var(--tint);font:inherit}
+.inbox-side-head input:focus{outline:0;border-color:var(--ink);background:#fff}
+.inbox-side .empty{margin:1rem;font-size:.92rem}
+.threads{flex:1;min-height:0;list-style:none;overflow-y:auto}
+.threads a{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:.2rem .8rem;padding:.9rem 1rem;border-bottom:1px solid var(--line)}
+.threads a:hover{background:var(--tint)}
+.threads a[aria-current]{background:var(--tint);box-shadow:inset 3px 0 0 var(--ink)}
+.threads .avatar{grid-row:span 2}
+.t-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600;color:var(--ink)}
+.t-name small{font-weight:400;color:var(--muted)}
+.t-time{font-size:.8rem;color:var(--muted)}
+.t-preview{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.9rem;color:var(--muted)}
+.threads .unread .t-preview{font-weight:600;color:var(--ink)}
+.badge{display:inline-grid;place-items:center;min-width:1.25rem;height:1.25rem;padding:0 .35rem;border-radius:999px;background:var(--red);color:#fff;font-size:.75rem;font-weight:700}
+
+/* conversation : les messages défilent, la barre de saisie reste en bas */
+.thread{display:flex;flex-direction:column;min-width:0;min-height:0}
+.thread-head{flex-shrink:0;display:flex;align-items:center;gap:.8rem;padding:.8rem 1.1rem;border-bottom:1px solid var(--line)}
+.thread-head small{display:block;color:var(--muted)}
+.thread-head .link-quiet{margin-left:auto}
+.thread-back{display:none;padding:.2rem .4rem;background:none;border:0;font-size:1.4rem;line-height:1;color:var(--ink);cursor:pointer}
+.thread-note{flex-shrink:0;padding:.5rem 1.1rem;background:var(--tint);border-bottom:1px solid var(--line);font-size:.88rem;color:var(--muted)}
+
+.chat{flex:1;min-height:0;display:flex;flex-direction:column;gap:.5rem;padding:1.1rem;overflow-y:auto;background:var(--paper)}
+.day-sep{align-self:center;margin:.4rem 0;font-size:.8rem;color:var(--muted)}
+.msg{max-width:min(560px,82%);padding:.55rem .85rem;background:#fff;border:1px solid var(--line);border-radius:14px;overflow-wrap:anywhere}
+.msg.out{align-self:flex-end;background:var(--ink);border-color:var(--ink);color:#fff}
+.msg time{display:block;margin-top:.2rem;font-size:.75rem;opacity:.65}
+.msg-file{display:flex;align-items:center;gap:.6rem;margin-top:.4rem}
+
+.composer{flex-shrink:0;display:flex;align-items:flex-end;gap:.5rem;padding:.8rem 1rem;background:#fff;border-top:1px solid var(--line)}
+.composer textarea{flex:1;min-height:44px;max-height:140px;padding:.65rem .9rem;border:1px solid var(--line);border-radius:18px;font:inherit;resize:none}
+.composer textarea:focus{border-color:var(--ink);outline:0;box-shadow:0 0 0 3px var(--tint)}
+.composer .btn-search{padding:.7rem 1.4rem;border-radius:6px}
+
+@media(max-width:800px){
+	.inbox{grid-template-columns:1fr}
+	.thread{display:none}
+	.inbox.open .inbox-side{display:none}
+	.inbox.open .thread{display:flex}
+	.thread-back{display:block}
+}
+
+.auth-buttons a.nav-messages{display:inline-flex;align-items:center;gap:.4rem;color:var(--ink)}
+.auth-buttons a.nav-messages:hover{background:var(--tint)}
+.nav-messages .badge{margin-left:0}
+
+/* en-tête sur une seule ligne */
+.header-inner{gap:1.25rem}
+.main-nav{gap:1.25rem;margin:0 auto 0 .5rem}
+.main-nav a,.auth-buttons a{white-space:nowrap}
+.auth-buttons{flex-shrink:0}
+.auth-buttons a{padding:.5rem .9rem}
+
+/* sur les écrans moyens : on retire « Questions » pour garder de la place */
+@media(max-width:1180px){.main-nav a:nth-child(4){display:none}}
+
+/* sur mobile : les boutons peuvent passer sur une deuxième ligne plutôt que de déborder */
+@media(max-width:600px){
+	.header-inner{flex-wrap:wrap;height:auto;min-height:72px;padding-block:.5rem;gap:.5rem}
+	.auth-buttons a{padding:.45rem .7rem;font-size:.88rem}
+}

@@ -47,7 +47,16 @@ const formatedLevel = {
 				window.location.href = "/";
 			});
 
-			box.replaceChildren(space, logout);
+			const messages = document.createElement("a");
+			messages.href = "/messages";
+			messages.className = "nav-messages";
+			messages.textContent = "Messages";
+			const badge = document.createElement("span");
+			badge.className = "badge";
+			badge.hidden = true;
+			messages.append(badge);
+
+			box.replaceChildren(messages, space, logout);
 		}
 	} catch (error) {}
 	box.classList.add("ready");

@@ -327,4 +327,41 @@ router.patch("/perso-info", requireAuth(["TUTOR"]), async (req, res) => {
     }
 });
 
+router.get("/get-lessons", requireAuth(["TUTOR"]), async (req, res) => {
+    try {
+        const tutorLessons = await prisma.lesson.findMany({
+            where: {
+                tutor: { userId: req.session.user.id },
+                startDate: { gte: new Date(Date.now())}
+            },
+            select: {
+                id: true,
+                startDate: true,
+                student: {
+                    select: {
+                        user: {
+                            select: {
+                                firstName: true,
+                                lastName: true
+                            }
+                        }
+                    }
+                },
+                course: {
+                    select: {
+                        subject: true,
+                        level: true,
+                        duration: true,
+                        mode: true
+                    }
+                }
+            }
+        });
+        res.status(200).json({ tutorLessons });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Erreur serveur" });
+    }
+});
+
 module.exports = router;

@@ -1,5 +1,4 @@
 function updateHeader(tutorData) {
-    console.log(tutorData);
     const docHeader = document.querySelector(".page-head-inner");
     docHeader.querySelector(".avatar").textContent = `${tutorData.firstName[0]}${tutorData.lastName[0]}`.toUpperCase();
     docHeader.querySelector("h1").textContent = `${tutorData.firstName} ${tutorData.lastName.toUpperCase()}`;
@@ -58,11 +57,6 @@ function loadCourses() {
     COURSES.forEach(course => addCourse(course, coursesList));
 }
 
-function formatTime(minutes) {
-    if (minutes < 60) return `${minutes}min`;
-    return `${Math.floor(minutes / 60)}h${(minutes % 60).toString().padStart(2, "0")}`;
-}
-
 function addCourse(course, selector) {
     const globalPoint = document.createElement("li");
 
@@ -71,7 +65,7 @@ function addCourse(course, selector) {
     const subjectElem = document.createElement("h3");
     subjectElem.textContent = course.title;
     const courseDescElem = document.createElement("p");
-    courseDescElem.textContent = `${course.bio}. ${formatTime(course.duration)}, ${course.mode === "TOUS" ? "en ligne ou à domicile." : course.mode.toLowerCase().replace("_", " ")}`;
+    courseDescElem.textContent = `${course.bio}. ${formatDuration(course.duration)}, ${course.mode === "TOUS" ? "en ligne ou à domicile." : course.mode.toLowerCase().replace("_", " ")}`;
     courseDescDiv.appendChild(subjectElem);
     courseDescDiv.appendChild(courseDescElem);
 
@@ -314,6 +308,52 @@ async function verifyCityName(name) {
 	return matches.length === 1 ? matches[0] : null;
 }
 
+async function loadLessons() {
+    try {
+        const getNextLessons = await fetch("/api/tutor/get-lessons", { method: "GET" });
+        const data = await getNextLessons.json();
+        const lessonSection = document.getElementById("cours");
+        lessonSection.querySelector(".lessons").innerHTML = "";
+        data.tutorLessons.forEach(lesson => addLesson(lesson, lessonSection.querySelector(".lessons")));
+    } catch (error) { console.error(error) }
+}
+
+function addLesson(lesson, selector) {
+    const globalPoint = document.createElement("li");
+
+    const date = document.createElement("div");
+    date.classList.add("date");
+    const startDate = new Date(lesson.startDate);
+    const formatedStartDate = startDate.toLocaleDateString("fr-FR", { weekday: "short", day: "numeric", month: "short"}).split(" ");
+    date.innerHTML = `<b>${formatedStartDate[1]}</b>${formatedStartDate[0]} ${formatedStartDate[2]}`;
+
+    const lessonInfo = document.createElement("div");
+    lessonInfo.classList.add("who");
+    const details = document.createElement("h3");
+    details.textContent = `${lesson.student.user.firstName} ${lesson.student.user.lastName.toUpperCase()}, ${formatedLevel[lesson.course.level].slice(3)}`;
+    const time = document.createElement("p");
+    const endDate = new Date(startDate);
+    endDate.setMinutes(endDate.getMinutes() + lesson.course.duration);
+    time.textContent = `${formatTime(startDate)} à ${formatTime(endDate)}, ${formatedMode[lesson.course.mode]}`;
+    lessonInfo.appendChild(details);
+    lessonInfo.appendChild(time);
+
+    const detailsLink = document.createElement("a");
+    detailsLink.href = "#";
+    detailsLink.classList.add("btn-line");
+    detailsLink.textContent = "Details";
+    const cancelLink = document.createElement("a");
+    cancelLink.href = "#";
+    cancelLink.classList.add("link-quiet");
+    cancelLink.textContent = "Annuler";
+
+    globalPoint.appendChild(date);
+    globalPoint.appendChild(lessonInfo);
+    globalPoint.appendChild(detailsLink);
+    globalPoint.appendChild(cancelLink);
+    selector.appendChild(globalPoint);
+}
+
 const normalize = s => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
 
 const addCourseBtn = document.getElementById("add-course");
@@ -357,6 +397,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     loadExperiences();
     loadCourses();
     loadInfos(tutorData);
+    loadLessons();
     initScrollSpy();
 
     processModals(courseForm, addCourseBtn, courseFormCancel);
