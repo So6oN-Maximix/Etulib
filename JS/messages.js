@@ -1,0 +1,240 @@
+async function loadConversations(conversations) {
+    const conversationAside = document.getElementById("conversation");
+    try {
+        conversationAside.querySelector(".threads").innerHTML = "";
+        document.getElementById("no-threads").hidden = conversations.length > 0;
+        for (const conversation of conversations) {
+            const getConversationInfos = await fetch(`/api/message/get-conv-infos?id=${conversation.userId}`, { method: "GET" });
+            const conversationInfos = (await getConversationInfos.json()).conversationInfos;
+            const getNewMsgNum = await fetch(`/api/message/get-new-msg?id=${conversation.id}`, { method: "GET" });
+            const newMsgNum = await getNewMsgNum.json();
+            console.log(newMsgNum);
+            addConversation(conversation.id, conversationInfos, newMsgNum, conversationAside.querySelector(".threads"));
+        }
+    } catch (error) { console.error(error) }
+}
+
+function formatMsgDate(dateInput) {
+    if (!dateInput) return "";
+
+    const date = new Date(dateInput);
+    if (isNaN(date.getTime())) return "";
+
+    const now = new Date();
+    
+    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const startOfMsgDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    
+    const diffInDays = Math.round((startOfToday - startOfMsgDate) / (1000 * 60 * 60 * 24));
+
+    if (diffInDays === 0) {
+        return date.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+    } 
+    
+    if (diffInDays > 0 && diffInDays < 7) {
+        let dayStr = date.toLocaleDateString("fr-FR", { weekday: "short" });
+        dayStr = dayStr.charAt(0).toUpperCase() + dayStr.slice(1);
+        return dayStr.endsWith(".") ? dayStr : `${dayStr}.`;
+    } 
+    
+    const sameYear = date.getFullYear() === now.getFullYear();
+    return date.toLocaleDateString("fr-FR", {
+        day: "numeric",
+        month: "short",
+        ...(sameYear ? {} : { year: "2-digit" })
+    });
+}
+
+function addConversation(conversationId, conversationInfos, newMsgCount, selector) {
+    const globalPoint = document.createElement("li");
+
+    const globalLink = document.createElement("a");
+    globalLink.href = "#";
+    const avatar = document.createElement("span");
+    avatar.classList.add("avatar");
+    avatar.textContent = `${conversationInfos.firstName[0]}${conversationInfos.lastName[0]}`.toUpperCase();
+    const name = document.createElement("span");
+    name.classList.add("t-name");
+    name.textContent = `${conversationInfos.firstName} ${conversationInfos.lastName.toUpperCase()}`;
+    const time = document.createElement("span");
+    time.classList.add("t-time");
+    time.textContent = formatMsgDate(new Date(newMsgCount.createdAt));
+    const preview = document.createElement("span");
+    preview.classList.add("t-preview");
+    preview.innerHTML = newMsgCount.body;
+
+
+    globalLink.onclick = event => {
+        event.preventDefault();
+
+        if (globalLink.getAttribute("aria-current") === "true") return;
+        const activeLink = selector.querySelector('a[aria-current="true"]');
+        if (activeLink) activeLink.removeAttribute("aria-current");
+        globalLink.setAttribute("aria-current", "true");
+        globalLink.classList.remove("unread");
+        const badge = globalLink.querySelector(".badge");
+        if (badge) {
+            badge.remove();
+            const allMsgUnread = document.getElementById("global-unread-badge")
+            allMsgUnread.textContent = parseInt(allMsgUnread.textContent) - parseInt(badge.textContent);
+            if (allMsgUnread.textContent === "0") allMsgUnread.remove();
+        }
+
+        updateHeader(conversationInfos);
+        loadMessages(conversationId, conversationInfos);
+    };
+
+    globalLink.appendChild(avatar);
+    globalLink.appendChild(name);
+    globalLink.appendChild(time);
+    globalLink.appendChild(preview);
+    if (newMsgCount.count > 0) {
+        globalLink.classList.add("unread");
+        const badge = document.createElement("span");
+        badge.classList.add("badge");
+        badge.textContent = newMsgCount.count;
+        globalLink.appendChild(badge);
+    }
+    globalPoint.appendChild(globalLink);
+    selector.appendChild(globalPoint);
+}
+
+function updateHeader(conversationInfos) {
+    const messagesSection = document.getElementById("messages");
+    const avatarSection = messagesSection.querySelector(".thread-head")
+    avatarSection.querySelector(".avatar").textContent = `${conversationInfos.firstName[0]}${conversationInfos.lastName[0]}`.toUpperCase();
+    const userDetails = conversationInfos.role === "TUTOR" ? "Professeur" : "Eleve";
+    avatarSection.querySelector("div").innerHTML = `<b>${conversationInfos.firstName} ${conversationInfos.lastName.toUpperCase()}</b><small>${userDetails}</small>`;
+    avatarSection.querySelector("a").hidden = conversationInfos.role !== "TUTOR";
+    if (conversationInfos.role === "TUTOR") avatarSection.querySelector("a").href = `/tutor?id=${conversationInfos.tutor.id}`;
+}
+
+async function loadMessages(conversationId, conversationInfos) {
+    try {
+        const findMessages = await fetch("/api/message/get-msg", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ conversationId: conversationId })
+        });
+        MESSAGES = (await findMessages.json()).messages;
+
+        const chatElement = document.getElementById("chat");
+        chatElement.setAttribute("data-id", conversationId);
+        chatElement.innerHTML = "";
+        if (MESSAGES.length > 0) MESSAGES.forEach(message => addMessage(message, chatElement));
+        else showNoMessagesElement(conversationInfos, chatElement);
+        scrollToBottom(false);
+    } catch (error) { console.error(error) }
+}
+
+function scrollToBottom(smooth = false) {
+    const chatElement = document.getElementById("chat");
+    if (!chatElement) return;
+
+    chatElement.scrollTo({
+        top: chatElement.scrollHeight,
+        behavior: smooth ? "smooth" : "auto"
+    });
+}
+
+function addMessage(message, selector) {
+    const previousMsg = selector.querySelectorAll("div.msg");
+    const globalDiv = document.createElement("div");
+    if (message.senderId === 0) {
+        globalDiv.classList.add("system-event");
+        const text = document.createElement("span");
+        text.innerHTML = message.body;
+        globalDiv.appendChild(text);
+    } else {
+        if (previousMsg.length === 0) addDaySeparator(message.createdAt, selector);
+        else {
+            const date1 = new Date(previousMsg[previousMsg.length - 1].querySelector("time").getAttribute("data-time"));
+            const date2 = new Date(message.createdAt);
+            const isDifferentDay = date1.toDateString() !== date2.toDateString();
+            if (isDifferentDay) addDaySeparator(message.createdAt, selector);
+        }
+
+        globalDiv.classList.add("msg");
+        message.myId === message.senderId ? globalDiv.classList.add("out") : globalDiv.classList.add("in");
+        globalDiv.innerHTML = `${message.body}<time>${formatTime(new Date(message.createdAt))}</time>`;
+        globalDiv.querySelector("time").setAttribute("data-time", message.createdAt);
+    }
+    selector.appendChild(globalDiv);
+}
+
+function addDaySeparator(day, selector) {
+    const sep = document.createElement("p");
+    sep.classList.add("day-sep")
+    const dayDate = new Date(day);
+    const formattedDate = dayDate.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long"});
+    sep.textContent = formattedDate.charAt(0).toUpperCase() + formattedDate.slice(1);
+    selector.appendChild(sep);
+}
+
+function showNoMessagesElement(conversationInfos, selector) {
+    const globalDiv = document.createElement("div");
+    globalDiv.classList.add("chat-empty");
+    globalDiv.id = "chat-empty";
+
+    const emptyIcon = document.createElement("span");
+    emptyIcon.classList.add("chat-empty-icon");
+    emptyIcon.setAttribute("aria-hidden", true);
+    emptyIcon.innerHTML = "<svg viewBox=\"0 0 24 24\"><path d=\"M21 12a8 8 0 0 1-11.6 7.1L4 20l1.1-4.6A8 8 0 1 1 21 12z\"/></svg>";
+
+    const noMessage = document.createElement("p");
+    const noMessageBold = document.createElement("b");
+    noMessageBold.textContent = "Pas encore de message";
+    noMessage.appendChild(noMessageBold);
+
+    const para = document.createElement("p");
+    para.innerHTML = `Envoyez le premier message pour démarrer la conversation avec <span id="chat-empty-name">${conversationInfos.firstName} ${conversationInfos.lastName.toUpperCase()}</span>.`;
+
+    globalDiv.appendChild(emptyIcon);
+    globalDiv.appendChild(noMessage);
+    globalDiv.appendChild(para);
+    selector.appendChild(globalDiv);
+}
+
+const composerForm = document.getElementById("composer");
+
+let MESSAGES;
+
+document.addEventListener("DOMContentLoaded", async () => {
+    const getConversations = await fetch("/api/message/get-conversation", { method: "GET" });
+    const conversations = (await getConversations.json()).conversations;
+    console.log(conversations);
+
+    loadConversations(conversations);
+    loadUnreadMsg();
+});
+
+composerForm.addEventListener("submit", async event => {
+    event.preventDefault();
+    const dataForm = Object.fromEntries(new FormData(composerForm));
+    dataForm.conversationId = parseInt(document.getElementById("chat").getAttribute("data-id"));
+    try {
+        const sendMessage = await fetch("/api/message/send", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(dataForm)
+        });
+        const data = await sendMessage.json();
+        if (!sendMessage.ok) {
+            console.error(data.error);
+            showToast(data.error, "error");
+            return;
+        }
+        MESSAGES.push({
+            senderId: MESSAGES[0].myId,
+            body: dataForm.message,
+            createdAt: new Date(Date.now()),
+            myId: MESSAGES[0].myId
+        });
+        addMessage(MESSAGES[MESSAGES.length - 1], document.getElementById("chat"));
+        composerForm.reset();
+        scrollToBottom(true);
+    } catch (error) {
+        console.error(error);
+        showToast("Erreur server", "error");
+    }
+});

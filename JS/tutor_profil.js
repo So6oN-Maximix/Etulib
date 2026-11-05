@@ -407,6 +407,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     loadInfos(tutorData);
     loadLessons();
     initScrollSpy();
+    loadUnreadMsg();
 
     processModals(courseForm, addCourseBtn, courseFormCancel);
     processModals(pathForm, addPathBtn, pathFormCancel);

@@ -51,10 +51,6 @@ const formatedLevel = {
 			messages.href = "/messages";
 			messages.className = "nav-messages";
 			messages.textContent = "Messages";
-			const badge = document.createElement("span");
-			badge.className = "badge";
-			badge.hidden = true;
-			messages.append(badge);
 
 			box.replaceChildren(messages, space, logout);
 		}

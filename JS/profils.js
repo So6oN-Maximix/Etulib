@@ -32,3 +32,22 @@ function initScrollSpy() {
 	window.addEventListener("resize", update);
 	update();
 }
+
+async function loadUnreadMsg() {
+	try {
+		const getUnreadMsgCount = await fetch("/api/message/get-unread", { method: "GET" });
+		const count = await getUnreadMsgCount.json();
+
+		if (count > 0) {
+			let badge = document.getElementById("global-unread-badge");
+			if (badge) badge.textContent = count;
+			else {
+				badge = document.createElement("span");
+				badge.classList.add("badge");
+				badge.textContent = count;
+				badge.id = "global-unread-badge";
+				document.querySelector(".nav-messages").appendChild(badge);
+			}
+		}
+	} catch (error) { console.error(error) }
+}

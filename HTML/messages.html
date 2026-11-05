@@ -9,6 +9,8 @@
 	<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700&family=Instrument+Sans:wght@400;500;600&family=Kalam&display=swap" rel="stylesheet">
 	<link rel="stylesheet" href="/styles.css">
 	<script src="/JS/header.js" defer></script>
+	<script src="/JS/profils.js" defer></script>
+	<script src="/JS/messages.js" defer></script>
 </head>
 <body class="messages-page">
 <header class="site-header">
@@ -30,7 +32,7 @@
 <main class="messages-main">
 	<div class="inbox" id="inbox">
 
-		<aside class="inbox-side" aria-label="Conversations">
+		<aside class="inbox-side" aria-label="Conversations" id="conversation">
 			<div class="inbox-side-head">
 				<h1>Messages</h1>
 				<input type="search" id="thread-search" placeholder="Rechercher une conversation" aria-label="Rechercher une conversation">
@@ -65,7 +67,7 @@
 			<p class="empty" id="no-threads" hidden>Aucune conversation pour le moment. Elles apparaissent dès qu'un cours est réservé ou qu'un message est envoyé depuis la fiche d'un professeur.</p>
 		</aside>
 
-		<section class="thread" aria-label="Conversation">
+		<section class="thread" aria-label="Conversation" id="messages">
 			<div class="thread-head">
 				<button type="button" class="thread-back" id="thread-back" aria-label="Retour aux conversations">←</button>
 				<span class="avatar">CM</span>
@@ -75,6 +77,9 @@
 			<p class="thread-note" hidden>En tant que parent, vous voyez les échanges de Léa avec son professeur.</p>
 
 			<div class="chat" id="chat" aria-live="polite">
+				<div class="system-event">
+					<span>Cours de <b>Mathématiques</b> réservé pour le <b>Mercredi 4 novembre 2026 à 17 h 30</b></span>
+				</div>
 				<p class="day-sep">Mardi 3 novembre</p>
 				<div class="msg in">
 					Bonjour, je vous ai déposé les exercices pour mercredi.
@@ -85,7 +90,7 @@
 				<div class="msg in">Parfait. N'hésitez pas à noter vos questions avant la séance.<time>17:42</time></div>
 			</div>
 
-			<form class="composer" id="composer" onsubmit="return false">
+			<form class="composer" id="composer">
 				<button type="button" class="btn-line" id="attach-btn">Joindre</button>
 				<input type="file" id="msg-file" hidden>
 				<textarea name="message" rows="1" placeholder="Écrire un message…" aria-label="Votre message"></textarea>
@@ -94,5 +99,6 @@
 		</section>
 	</div>
 </main>
+<div class="toasts" id="toasts" role="status" aria-live="polite"></div>
 </body>
 </html>

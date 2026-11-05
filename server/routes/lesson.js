@@ -2,6 +2,10 @@ const express = require("express");
 const prisma = require("../lib/prisma");
 const requireAuth = require("../middleware/requireAuth");
 const requireChildren = require("../middleware/requireChildren");
+const { encryptMessage } = require("../lib/crypto");
+
+require("dotenv").config();
+process.env.MESSAGE_KEY_V1
 
 const router = express.Router();
 
@@ -11,6 +15,13 @@ function parseLesson(body) {
     const reserveDate = new Date(reservation);
     if (typeof tutorId !== "number" || typeof courseId !== "number" || reserveDate < today) return null;
     return { tutorId, reserveDate, courseId };
+}
+
+function formatTime(dateInput) {
+    const date = new Date(dateInput);
+    const hours = date.getHours();
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    return `${hours}h${minutes}`;
 }
 
 router.post("/reserve", requireAuth(["STUDENT", "PARENT"]), async (req, res) => {
@@ -41,6 +52,46 @@ router.post("/reserve", requireAuth(["STUDENT", "PARENT"]), async (req, res) => 
                         }
                     }
                 }
+            }
+        });
+        
+        const courseInfo = await prisma.course.findUnique({
+            where: { id: data.courseId },
+            select: {
+                subject: true,
+                duration: true
+            }
+        });
+        const startDate = new Date(data.reserveDate);
+        const formatedStartDate = startDate.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+        const systemMessageText = `Cours de <b>${courseInfo.subject}</b> réservé pour le <b>${formatedStartDate.charAt(0).toUpperCase() + formatedStartDate.slice(1)} à ${formatTime(startDate)}</b>`;
+        
+        const getTutorUserId = await prisma.tutorProfile.findUnique({
+            where: { id: data.tutorId },
+            select: { userId: true }
+        });
+        let findConversationId = await prisma.conversation.findUnique({
+            where: {
+                tutorId_studentId: {
+                    tutorId: getTutorUserId.userId,
+                    studentId: req.session.user.id
+                }
+            },
+            select: { id: true }
+        });
+        if (!findConversationId) findConversationId = await prisma.conversation.create({
+            data: {
+                tutorId: getTutorUserId.userId,
+                studentId: req.session.user.id
+            },
+            select: { id: true }
+        });
+
+        await prisma.message.create({
+            data: {
+                conversationId: findConversationId.id,
+                senderId: 0,
+                body: encryptMessage(systemMessageText, findConversationId.id)
             }
         });
         res.status(201).json({ saveLesson });

@@ -128,6 +128,28 @@ model Lesson {
 	@@unique([tutorId, startDate])
 }
 
+model Conversation {
+	id        Int       	 @id @default(autoincrement())
+	tutorId   Int
+	studentId Int
+	messages  Message[]
+	createdAt DateTime  	 @default(now())
+
+	@@unique([tutorId, studentId])
+}
+
+model Message {
+	id             Int          @id @default(autoincrement())
+	conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+	conversationId Int
+	senderId       Int
+	body           String
+	isRead		   Boolean		@default(false)
+	createdAt      DateTime     @default(now())
+
+	@@index([conversationId, createdAt])
+}
+
 model Address {
 	id         Int              @id @default(autoincrement())
 	street     String

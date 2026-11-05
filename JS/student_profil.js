@@ -118,6 +118,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     updateNextCourses();
     updateTutors();
     initScrollSpy();
+    loadUnreadMsg();
 });
 
 studentInfoForm.addEventListener("submit", async event => {
