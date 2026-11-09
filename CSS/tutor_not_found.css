@@ -1,0 +1,3 @@
+.not-found-actions{display:flex;flex-wrap:wrap;align-items:center;gap:.75rem}
+
+.not-found-actions .btn-search{display:inline-block;padding:.85rem 1.6rem;border-radius:6px;text-align:center}

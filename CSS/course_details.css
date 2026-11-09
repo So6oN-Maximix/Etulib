@@ -1,0 +1,121 @@
+/* page de détail d'un cours */
+.lesson-head .tags span{background:#fff}
+
+/* carte d'informations à droite */
+.lesson-aside{max-height:calc(100vh - 7rem);overflow-y:auto}
+
+.facts{margin:0 0 .5rem;border-top:1px solid var(--line)}
+
+.facts > div{display:flex;justify-content:space-between;align-items:baseline;gap:1rem;padding:.55rem 0;border-bottom:1px solid var(--line)}
+
+.facts dt{font-size:.9rem;color:var(--muted)}
+
+.facts dd{font-weight:600;color:var(--ink);text-align:right}
+
+.facts .wide{flex-direction:column;gap:.15rem}
+
+.facts .wide dd{text-align:left}
+
+.tutor-mini{display:flex;align-items:center;gap:.8rem}
+
+.tutor-mini small{display:block;color:var(--muted)}
+
+.booking .btn-line{text-align:center}
+
+/* documents */
+.dropzone{position:relative;display:flex;flex-direction:column;align-items:center;gap:.25rem;margin-bottom:1.5rem;padding:2rem 1.5rem;text-align:center;background:#fff;border:1.5px dashed var(--ink);border-radius:6px;color:var(--muted);cursor:pointer;transition:background .15s}
+
+.dropzone strong{font-family:"Bricolage Grotesque",sans-serif;font-size:1.1rem;color:var(--ink)}
+
+.dropzone:hover,.dropzone.over,.dropzone:focus-within{background:var(--tint)}
+
+.dropzone input{position:absolute;inset:0;opacity:0;cursor:pointer}
+
+.docs li{grid-template-columns:auto minmax(0,1fr) auto}
+
+.docs .who h3{font-size:1.05rem;overflow-wrap:anywhere}
+
+@media (max-width:900px) {
+	.lesson-aside{max-height:none;overflow:visible}
+}
+
+@media (max-width:720px) {
+	.docs li{grid-template-columns:auto 1fr}
+	.docs .course-actions{grid-column:1/-1}
+}
+
+/* Système d'étoiles interactif */
+.star-field {
+	display: flex;
+	flex-direction: column;
+	gap: .4rem;
+}
+
+.star-label {
+	font-size: .85rem;
+	font-weight: 600;
+	color: var(--ink);
+}
+
+.star-picker-wrap {
+	display: flex;
+	align-items: center;
+	gap: 1rem;
+}
+
+.star-picker {
+	font-size: 2.2rem;
+	cursor: pointer;
+	letter-spacing: 4px;
+	user-select: none;
+	touch-action: none;
+}
+
+.rating-display {
+	font-family: "Bricolage Grotesque", sans-serif;
+	font-size: 1.25rem;
+	font-weight: 700;
+	color: var(--ink);
+	min-width: 60px;
+}
+
+/* Style et alignement de la liste des documents */
+.courses.docs li {
+	grid-template-columns: 44px 1fr auto;
+	align-items: center;
+	gap: 1.25rem;
+}
+
+.courses.docs .course-actions {
+	display: flex;
+	align-items: center;
+	gap: .5rem;
+	justify-content: flex-end;
+}
+
+/* Bouton poubelle rouge */
+.btn-trash {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 36px;
+	height: 36px;
+	border: 1px solid transparent;
+	border-radius: 6px;
+	background: transparent;
+	color: var(--red);
+	cursor: pointer;
+	transition: background .15s, border-color .15s;
+}
+
+.btn-trash:hover {
+	background: #fdf0ef;
+	border-color: rgba(216, 53, 42, 0.25);
+}
+
+/* Espace réservé pour garder tous les boutons Télécharger parfaitement alignés */
+.btn-trash-placeholder {
+	width: 36px;
+	height: 36px;
+	display: inline-block;
+}

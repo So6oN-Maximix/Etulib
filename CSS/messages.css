@@ -1,0 +1,110 @@
+/* messagerie plein écran, façon Messenger */
+body.messages-page{display:flex;flex-direction:column;height:100vh;height:100dvh;overflow:hidden}
+
+.messages-main{flex:1;min-height:0;display:grid;grid-template-rows:minmax(0,1fr)}
+
+.inbox{display:grid;grid-template-columns:340px minmax(0,1fr);grid-template-rows:minmax(0,1fr);min-height:0;background:#fff;overflow:hidden}
+
+/* liste des conversations */
+.inbox-side{display:flex;flex-direction:column;min-height:0;border-right:1px solid var(--line)}
+
+.inbox-side-head{flex-shrink:0;padding:1rem 1rem .8rem}
+
+.inbox-side-head h1{margin-bottom:.7rem;font-size:1.5rem}
+
+.inbox-side-head input{width:100%;padding:.55rem .9rem;border:1px solid var(--line);border-radius:999px;background:var(--tint);font:inherit}
+
+.inbox-side-head input:focus{outline:0;border-color:var(--ink);background:#fff}
+
+.inbox-side .empty{margin:1rem;font-size:.92rem}
+
+.threads{flex:1;min-height:0;list-style:none;overflow-y:auto}
+
+.threads a{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:.2rem .8rem;padding:.9rem 1rem;border-bottom:1px solid var(--line)}
+
+.threads a:hover{background:var(--tint)}
+
+.threads a[aria-current]{background:var(--tint);box-shadow:inset 3px 0 0 var(--ink)}
+
+.threads .avatar{grid-row:span 2}
+
+.t-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600;color:var(--ink)}
+
+.t-name small{font-weight:400;color:var(--muted)}
+
+.t-time{font-size:.8rem;color:var(--muted)}
+
+.t-preview{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.9rem;color:var(--muted)}
+
+.threads .unread .t-preview{font-weight:600;color:var(--ink)}
+
+/* conversation : les messages défilent, la barre de saisie reste en bas */
+.thread{display:flex;flex-direction:column;min-width:0;min-height:0}
+
+.thread-head{flex-shrink:0;display:flex;align-items:center;gap:.8rem;padding:.8rem 1.1rem;border-bottom:1px solid var(--line)}
+
+.thread-head small{display:block;color:var(--muted)}
+
+.thread-head .link-quiet{margin-left:auto}
+
+.thread-back{display:none;padding:.2rem .4rem;background:none;border:0;font-size:1.4rem;line-height:1;color:var(--ink);cursor:pointer}
+
+.thread-note{flex-shrink:0;padding:.5rem 1.1rem;background:var(--tint);border-bottom:1px solid var(--line);font-size:.88rem;color:var(--muted)}
+
+.chat{flex:1;min-height:0;display:flex;flex-direction:column;gap:.5rem;padding:1.1rem;overflow-y:auto;background:var(--paper)}
+
+.day-sep{align-self:center;margin:.4rem 0;font-size:.8rem;color:var(--muted)}
+
+.msg{max-width:min(560px,82%);padding:.55rem .85rem;background:#fff;border:1px solid var(--line);border-radius:14px;overflow-wrap:anywhere}
+
+.msg.out{align-self:flex-end;background:var(--ink);border-color:var(--ink);color:#fff}
+
+.msg time{display:block;margin-top:.2rem;font-size:.75rem;opacity:.65}
+
+.msg-file{display:flex;align-items:center;gap:.6rem;margin-top:.4rem}
+
+.composer{flex-shrink:0;display:flex;align-items:flex-end;gap:.5rem;padding:.8rem 1rem;background:#fff;border-top:1px solid var(--line)}
+
+.composer textarea{flex:1;min-height:44px;max-height:140px;padding:.65rem .9rem;border:1px solid var(--line);border-radius:18px;font:inherit;resize:none}
+
+.composer textarea:focus{border-color:var(--ink);outline:0;box-shadow:0 0 0 3px var(--tint)}
+
+.composer .btn-search{padding:.7rem 1.4rem;border-radius:6px}
+
+@media (max-width:800px) {
+	.inbox{grid-template-columns:1fr}
+	.thread{display:none}
+	.inbox.open .inbox-side{display:none}
+	.inbox.open .thread{display:flex}
+	.thread-back{display:block}
+}
+
+/* Badge d'événement système dans la conversation */
+.system-event {
+	align-self: center;
+	margin: 1rem auto;
+	padding: 0.5rem 1.25rem;
+	background: var(--tint);
+	border: 1px solid var(--line);
+	border-radius: 999px;
+	font-size: 0.85rem;
+	color: var(--muted);
+	text-align: center;
+	max-width: 90%;
+}
+
+.system-event b {
+	color: var(--ink);
+	font-weight: 600;
+}
+
+/* conversation vide */
+.chat-empty{margin:auto;max-width:340px;padding:1rem;text-align:center;color:var(--muted)}
+
+.chat-empty[hidden]{display:none}
+
+.chat-empty b{font-family:"Bricolage Grotesque",sans-serif;font-size:1.15rem;color:var(--ink)}
+
+.chat-empty-icon{display:grid;place-items:center;width:56px;height:56px;margin:0 auto .8rem;border:1.5px dashed var(--ink);border-radius:50%;color:var(--ink)}
+
+.chat-empty-icon svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}

@@ -22,8 +22,9 @@ app.use(session({
 	cookie: { httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production", maxAge: 7 * 24 * 60 * 60 * 1000 }
 }));
 
-app.use("/styles.css", express.static(path.join(root, "styles.css")));
+app.use("/master.css", express.static(path.join(root, "master.css")));
 app.use("/JS", express.static(path.join(root, "JS")));
+app.use("/CSS", express.static(path.join(root, "CSS")));
 
 app.use("/api/auth", require("./routes/auth"));
 app.use("/api/tutor", require("./routes/tutor"));

@@ -1,0 +1,163 @@
+.timeline {
+	list-style: none;
+	border-left: 2px solid var(--margin);
+	padding-left: 1.5rem
+}
+
+.timeline li {
+	display: grid;
+	grid-template-columns: 130px 1fr;
+	gap: 1rem;
+	padding: .55rem 0
+}
+
+.timeline b {
+	font-family: "Bricolage Grotesque", sans-serif;
+	color: var(--ink)
+}
+
+.reviews {
+	list-style: none
+}
+
+.reviews li {
+	padding: 1.25rem 0 1.25rem 1.5rem;
+	border-left: 2px solid var(--line);
+	margin-bottom: .5rem
+}
+
+.reviews blockquote {
+	font-size: 1.1rem;
+	color: var(--ink)
+}
+
+.reviews p {
+	margin-top: .5rem;
+	color: var(--muted);
+	font-size: .9rem
+}
+
+.booking .price {
+	text-align: left;
+	font-size: 2rem
+}
+
+.slots p {
+	font-size: .88rem;
+	font-weight: 600;
+	margin: .6rem 0 .3rem
+}
+
+.slots div {
+	display: flex;
+	gap: .4rem;
+	flex-wrap: wrap
+}
+
+.slots a {
+	border: 1px solid var(--line);
+	border-radius: 6px;
+	padding: .4rem .8rem;
+	font-weight: 500;
+	color: var(--ink)
+}
+
+.slots a:hover {
+	border-color: var(--ink);
+	background: var(--tint)
+}
+
+.booking .slots {
+    max-height: 180px;
+    overflow-y: auto;
+    padding-right: 6px;
+}
+
+.booking .slots::-webkit-scrollbar {
+    width: 5px;
+}
+
+.booking .slots::-webkit-scrollbar-thumb {
+    background-color: #cbd5e1;
+    border-radius: 10px;
+}
+
+.booking .slots::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+@media (max-width:900px) {
+	.timeline li {
+			grid-template-columns: 100px 1fr
+		}
+}
+
+.tutors.subjects li{grid-template-columns:minmax(0,1fr) auto}
+
+.subjects .price{white-space:nowrap}
+
+.subjects li{transition:background .15s,box-shadow .15s}
+
+.subjects li:hover{background:var(--tint);box-shadow:-1rem 0 0 var(--tint),1rem 0 0 var(--tint); cursor: pointer;}
+
+.booking .booking-course{margin:0;font-size:1.2rem;line-height:1.2;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;overflow:hidden}
+
+.timeline small{display:block;margin-top:.1rem;color:var(--muted);font-size:.9rem;line-height:1.4}
+
+/* Sélecteur de semaine dans le bloc de réservation */
+.week-picker {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: .5rem;
+	padding: .35rem .5rem;
+	background: var(--tint);
+	border: 1px solid var(--line);
+	border-radius: 6px;
+	margin-top: .25rem;
+}
+
+.week-label {
+	font-size: .88rem;
+	font-weight: 600;
+	color: var(--ink);
+	text-align: center;
+}
+
+.btn-week {
+	display: grid;
+	place-items: center;
+	width: 28px;
+	height: 28px;
+	background: #fff;
+	border: 1px solid var(--line);
+	border-radius: 4px;
+	color: var(--ink);
+	font-family: inherit;
+	font-size: 1.2rem;
+	font-weight: 600;
+	line-height: 1;
+	cursor: pointer;
+	transition: background .15s, border-color .15s, color .15s;
+}
+
+.btn-week:hover:not(:disabled) {
+	background: var(--ink);
+	color: #fff;
+	border-color: var(--ink);
+}
+
+.btn-week:disabled {
+	opacity: .35;
+	cursor: not-allowed;
+}
+
+.course-info{display:block;margin-top:.3rem;color:var(--ink);font-size:.9rem;font-weight:600}
+
+.booking .course-info{margin-top:-.4rem}
+
+.slots a{transition:background .15s,color .15s,border-color .15s}
+
+.slots a.selected{background:var(--ink);border-color:var(--ink);color:#fff}
+
+.slots a:focus-visible{outline:2px solid var(--ink);outline-offset:2px}

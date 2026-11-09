@@ -1,0 +1,298 @@
+/* hero : page de cahier Seyès */
+.hero {
+	position: relative;
+	padding: 5rem 0 5.5rem;
+	border-bottom: 1px solid var(--line);
+	background-color: var(--paper);
+	background-image: linear-gradient(var(--grid-main) 1px, transparent 1px), linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+	background-size: 100% 32px, 100% 8px, 32px 100%
+}
+
+.hero::before {
+	content: "";
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: max(1rem, calc((100vw - var(--max))/2 + 1rem));
+	width: 2px;
+	background: var(--margin)
+}
+
+.hero-content {
+	max-width: 780px;
+	padding-left: 2.25rem
+}
+
+.hero h1 {
+	font-size: clamp(2.2rem, 5vw, 3.6rem);
+	margin-bottom: 1.25rem
+}
+
+.hero p {
+	font-size: 1.15rem;
+	color: var(--muted);
+	max-width: 540px;
+	margin-bottom: 2.25rem
+}
+
+.levels {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: .5rem;
+	margin-top: 3rem;
+	font-size: .95rem;
+	color: var(--muted)
+}
+
+.levels span {
+	margin-right: .5rem
+}
+
+.levels a {
+	background: #fff;
+	border: 1px solid var(--line);
+	border-radius: 999px;
+	padding: .3rem .95rem;
+	font-weight: 500;
+	color: var(--ink)
+}
+
+.levels a:hover {
+	border-color: var(--ink)
+}
+
+/* sections */
+.section {
+	padding: 5.5rem 0
+}
+
+.section h2 {
+	font-size: clamp(1.6rem, 3vw, 2.2rem);
+	margin-bottom: 2.5rem
+}
+
+.split {
+	display: grid;
+	grid-template-columns: 1fr 1.3fr;
+	gap: 4rem;
+	align-items: start
+}
+
+.split-head h2 {
+	margin-bottom: 1rem
+}
+
+.split-head p {
+	color: var(--muted);
+	max-width: 380px
+}
+
+/* sommaire des matières */
+.toc a {
+	display: flex;
+	align-items: baseline;
+	gap: .6rem;
+	padding: .8rem 0;
+	border-bottom: 1px solid var(--line);
+	font-size: 1.15rem;
+	font-weight: 500
+}
+
+.toc i {
+	flex: 1;
+	border-bottom: 2px dotted #b9c0de;
+	transform: translateY(-4px)
+}
+
+.toc b {
+	font-size: .9rem;
+	font-weight: 500;
+	color: var(--muted)
+}
+
+.toc a:hover span {
+	color: var(--ink);
+	text-decoration: underline;
+	text-underline-offset: 4px
+}
+
+/* étapes */
+.steps {
+	list-style: none;
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	gap: 3rem
+}
+
+.num {
+	display: block;
+	font-size: 3.5rem;
+	font-weight: 700;
+	color: var(--ink);
+	line-height: 1;
+	margin-bottom: 1rem
+}
+
+.steps h3 {
+	font-size: 1.3rem;
+	margin-bottom: .5rem
+}
+
+.steps p {
+	color: var(--muted)
+}
+
+/* engagements */
+.pledges {
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	gap: 3rem
+}
+
+.pledges div {
+	border-top: 2px solid var(--ink);
+	padding-top: 1.1rem
+}
+
+.pledges h3 {
+	font-size: 1.2rem;
+	margin-bottom: .5rem
+}
+
+.pledges p {
+	color: var(--muted)
+}
+
+/* faq */
+.faq details {
+	border-bottom: 1px solid var(--line);
+	padding: 1.1rem 0
+}
+
+.faq summary {
+	cursor: pointer;
+	font-weight: 600;
+	font-size: 1.05rem;
+	list-style: none;
+	display: flex;
+	justify-content: space-between;
+	gap: 1rem;
+	color: var(--ink)
+}
+
+.faq summary::-webkit-details-marker {
+	display: none
+}
+
+.faq summary::after {
+	content: "+";
+	font-size: 1.4rem;
+	line-height: 1
+}
+
+.faq details[open] summary::after {
+	content: "−"
+}
+
+.faq p {
+	margin-top: .7rem;
+	color: var(--muted);
+	max-width: 560px
+}
+
+/* cta */
+.cta {
+	background: var(--ink);
+	color: #fff;
+	padding: 4rem 0
+}
+
+.cta-inner {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 2rem
+}
+
+.cta h2 {
+	color: #fff;
+	font-size: clamp(1.5rem, 3vw, 2rem);
+	margin-bottom: .5rem
+}
+
+.cta p {
+	color: #c6cdee
+}
+
+.btn-light {
+	background: #fff;
+	color: var(--ink);
+	font-weight: 600;
+	padding: .85rem 1.6rem;
+	border-radius: 6px;
+	white-space: nowrap
+}
+
+.btn-light:hover {
+	background: var(--tint)
+}
+
+.foot {
+	display: grid;
+	grid-template-columns: 1.5fr 1fr 1fr 1fr;
+	gap: 2rem
+}
+
+.foot p {
+	color: var(--muted);
+	margin-top: .6rem;
+	max-width: 260px
+}
+
+.foot h4 {
+	font-size: .95rem;
+	color: var(--ink);
+	margin-bottom: .6rem
+}
+
+.foot a:not(.logo) {
+	display: block;
+	color: var(--muted);
+	padding: .15rem 0
+}
+
+.foot a:not(.logo):hover {
+	color: var(--ink)
+}
+
+@media (max-width:900px) {
+	.split {
+			grid-template-columns: 1fr;
+			gap: 2rem
+		}
+	.steps,
+		.pledges {
+			grid-template-columns: 1fr;
+			gap: 2rem
+		}
+	.foot {
+			grid-template-columns: 1fr 1fr
+		}
+}
+
+@media (max-width:720px) {
+	.hero {
+			padding: 3.5rem 0 4.5rem
+		}
+	.hero-content {
+			padding-left: 1.25rem
+		}
+	.cta-inner {
+			flex-direction: column;
+			align-items: flex-start
+		}
+	.section {
+			padding: 4rem 0
+		}
+}

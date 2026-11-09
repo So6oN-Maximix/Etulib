@@ -1,0 +1,59 @@
+.auth {
+	padding: 4rem 0 5rem;
+	min-height: 70vh
+}
+
+.auth-card {
+	width: 100%;
+	max-width: 440px;
+	background: #fff;
+	border: 1.5px solid var(--ink);
+	border-radius: 6px;
+	padding: 2.25rem;
+	box-shadow: 5px 5px 0 rgba(27, 42, 107, .12)
+}
+
+.auth-card h1 {
+	font-size: 2rem;
+	margin-bottom: 1.5rem
+}
+
+.auth-card .form .btn-search {
+	justify-self: stretch;
+	padding: .85rem
+}
+
+.auth-row {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	gap: 1rem;
+	font-size: .9rem
+}
+
+.auth-row label {
+	flex-direction: row;
+	align-items: center;
+	gap: .5rem;
+	font-weight: 400;
+	color: var(--text);
+	font-size: .9rem
+}
+
+.auth-row a,
+.auth-foot a {
+	color: var(--ink);
+	text-decoration: underline;
+	text-underline-offset: 3px
+}
+
+.auth-foot {
+	margin-top: 1.5rem;
+	text-align: center;
+	color: var(--muted);
+	font-size: .95rem
+}
+
+.auth-foot a {
+	font-weight: 600
+}
