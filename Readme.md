@@ -82,6 +82,18 @@ Pour remplir la base avec des professeurs d'exemple (Saint-Étienne) :
 npm run seed
 ```
 
+## Tests & Intégration Continue (CI)
+
+Le projet utilise le runner de test natif de Node.js (`node --test`) et un pipeline **GitHub Actions** (`.github/workflows/ci.yml`) exécuté à chaque `push` ou `pull request`.
+
+Les tests unitaires (`server/tests/crypto.test.js`) vérifient notamment le chiffrement et le déchiffrement des messages (AES-256-GCM) avec validation de l'AAD (*Additional Authenticated Data*).
+
+### Exécuter les tests en local
+
+```bash
+cd server
+npm test
+
 ## Base de données
 
 ![Schéma de la base de données](server/prisma/ERD.svg)
@@ -142,12 +154,12 @@ Les routes `/api/tutor` demandent d'être connecté en tuteur, les routes `/api/
 | POST | `/api/lesson/reserve` | Réserve un créneau (409 si déjà pris) |
 | GET | `/api/lesson/get-next` | Cours à venir d'un élève (ou `?id=` pour le parent) |
 | POST | `/api/lesson/get-info` | Détails d'un cours réservé (cours, tuteur, élève, date) |
-| GET | `/api/message/get-conversation` | Conversations de l'utilisateur connecté |
-| GET | `/api/message/get-conv-infos?id=` | Nom et rôle de l'interlocuteur |
-| GET | `/api/message/get-new-msg?id=` | Nombre de messages non lus d'une conversation |
-| POST | `/api/message/get-msg` | Messages d'une conversation (déchiffrés, marqués comme lus) |
+| GET | `/api/message/get-conversation` | Conversations de l'utilisateur (renvoie l'ID de conversation et le `userId` de l'interlocuteur) |
+| GET | `/api/message/get-conv-infos/:id` | Informations de l'interlocuteur (nom, prénom, rôle) |
+| POST | `/api/message/get-msg` | Messages d'une conversation (requiert `{ conversationId }`, messages déchiffrés) |
 | POST | `/api/message/send` | Envoie un message (chiffré avant enregistrement) |
-| GET | `/api/message/get-unread` | Nombre total de messages non lus |
+| POST | `/api/message/mark-as-read` | Marque tous les messages reçus d'une conversation comme lus |
+| GET | `/api/message/unread-count` | Nombre total de messages non lus reçus par l'utilisateur connecté |
 
 Les routes `auth` sont limitées en nombre de tentatives. Les pages `student_profil`, `parent_profil` et `tutor_profil` sont réservées à leur rôle (`server.js`) ; la page `student_profil` est aussi ouverte aux parents. Le middleware `requireChildren` détermine de quel élève on parle : l'élève connecté, ou l'enfant d'un parent (`?id=`) après vérification du lien de parenté.
 
@@ -164,7 +176,7 @@ Les routes `auth` sont limitées en nombre de tentatives. Les pages `student_pro
 | Recherche (`research`) | filtrée par matière et/ou ville via `/api/public/search-tutor`. Le reste est statique |
 | Confirmation (`success_reserve`) | récapitulatif de la réservation |
 | Détails d'un cours (`course_details`) | informations du cours réservé (titre, matière, date, heure, durée, mode, tarif, élève, tuteur), chargées depuis la base. L'échange de fichiers n'est pas encore branché |
-| Messagerie (`messages`) | liste des conversations, messages non lus, envoi et lecture de messages chiffrés. Pas de mise à jour en direct |
+| Messagerie (`messages`) | liste des conversations, prévisualisation du dernier message et des dates, défilement automatique des discussions (`scrollToBottom`), suppression dynamique des badges non lus au clic, envoi et lecture de messages chiffrés. Pas de mise à jour en direct. |
 
 L'en-tête (`header.js`) remplace « Se connecter » et « Créer un compte » par « Mon espace » et « Se déconnecter » quand l'utilisateur est connecté, et ajoute un lien « Messages ».
 
@@ -174,7 +186,6 @@ L'en-tête (`header.js`) remplace « Se connecter » et « Créer un compte » p
 - Valider la fenêtre « Complétez votre profil » (envoi au serveur)
 - Finir la fiche publique : retrait des créneaux déjà réservés
 - Échange de fichiers sur la page de détails d'un cours
-- Afficher le nombre de messages non lus dans l'en-tête (`/api/message/get-unread` existe déjà)
 - Espaces parent et élève : comptes rendus, factures
 - Vérification des tuteurs (diplômes, identité) avant publication de leur fiche
 - Mise en ligne : HTTPS, sessions stockées en base
