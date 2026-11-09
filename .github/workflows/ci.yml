@@ -25,6 +25,7 @@ jobs:
       DATABASE_URL: postgresql://test:test@localhost:5433/etulib_test
       SESSION_SECRET: secret-de-test-ci
       MESSAGE_KEY_V1: "0000000000000000000000000000000000000000000000000000000000000000"
+      DISABLE_ERD: "true"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
