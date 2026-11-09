@@ -24,6 +24,7 @@ model User {
 	tutor        TutorProfile?
 	parent       ParentProfile?
 	student      StudentProfile?
+	attachments  Attachment[]
 	createdAt	 DateTime 		 @default(now())
 	updatedAt    DateTime 		 @updatedAt
 }
@@ -114,16 +115,17 @@ model Course {
 }
 
 model Lesson {
-	id        Int            @id @default(autoincrement())
-	student   StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
-	studentId Int
-	tutor     TutorProfile   @relation(fields: [tutorId], references: [id], onDelete: Cascade)
-	tutorId   Int
-	course    Course		 @relation(fields: [courseId], references: [id], onDelete: Cascade)
-	courseId  Int
-	startDate DateTime
-	rating    Int?
-	review    String?
+	id             Int            @id @default(autoincrement())
+	student        StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
+	studentId      Int
+	tutor          TutorProfile   @relation(fields: [tutorId], references: [id], onDelete: Cascade)
+	tutorId        Int
+	course         Course		  @relation(fields: [courseId], references: [id], onDelete: Cascade)
+	courseId       Int
+	startDate      DateTime
+	rating         Int?
+	review         String?
+	attachments	   Attachment[]
 
 	@@unique([tutorId, startDate])
 }
@@ -145,9 +147,28 @@ model Message {
 	senderId       Int
 	body           String
 	isRead		   Boolean		@default(false)
+	attachments	   Attachment[]
 	createdAt      DateTime     @default(now())
 
 	@@index([conversationId, createdAt])
+}
+
+model Attachment {
+	id			 Int      @id @default(autoincrement())
+	originalName String
+	filename     String
+	mimeType     String
+	size         Int
+	userId		 Int
+	user		 User	  @relation(fields: [userId], references: [id], onDelete: Cascade)
+	messageId    Int?
+	message      Message? @relation(fields: [messageId], references: [id], onDelete: Cascade)
+	lessonId     Int?
+	lesson       Lesson?  @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+	createdAt    DateTime @default(now())
+
+	@@index([messageId])
+	@@index([lessonId])
 }
 
 model Address {

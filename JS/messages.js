@@ -8,7 +8,6 @@ async function loadConversations(conversations) {
             const conversationInfos = (await getConversationInfos.json()).conversationInfos;
             const getNewMsgNum = await fetch(`/api/message/get-new-msg?id=${conversation.id}`, { method: "GET" });
             const newMsgNum = await getNewMsgNum.json();
-            console.log(newMsgNum);
             addConversation(conversation.id, conversationInfos, newMsgNum, conversationAside.querySelector(".threads"));
         }
     } catch (error) { console.error(error) }
@@ -68,7 +67,7 @@ function addConversation(conversationId, conversationInfos, newMsgCount, selecto
         event.preventDefault();
 
         if (globalLink.getAttribute("aria-current") === "true") return;
-        const activeLink = selector.querySelector('a[aria-current="true"]');
+        const activeLink = selector.querySelector("a[aria-current=\"true\"]");
         if (activeLink) activeLink.removeAttribute("aria-current");
         globalLink.setAttribute("aria-current", "true");
         globalLink.classList.remove("unread");
@@ -156,10 +155,43 @@ function addMessage(message, selector) {
 
         globalDiv.classList.add("msg");
         message.myId === message.senderId ? globalDiv.classList.add("out") : globalDiv.classList.add("in");
-        globalDiv.innerHTML = `${message.body}<time>${formatTime(new Date(message.createdAt))}</time>`;
+        globalDiv.innerHTML = `
+            ${message.body}
+            <time>${formatTime(new Date(message.createdAt))}</time>
+        `;
         globalDiv.querySelector("time").setAttribute("data-time", message.createdAt);
+
+        if (message.attachments && message.attachments.length > 0) {
+            const time = globalDiv.querySelector("time");
+            message.attachments.forEach(file => globalDiv.insertBefore(addAttachFile(file), time));
+        }
     }
     selector.appendChild(globalDiv);
+}
+
+function addAttachFile(file) {
+    const globalDiv = document.createElement("div");
+    globalDiv.classList.add("msg-file");
+
+    const ext = document.createElement("span");
+    ext.classList.add("file-ext");
+    ext.textContent = MIME_LABELS[file.mimeType];
+
+    const metaDiv = document.createElement("div");
+    metaDiv.classList.add("file-meta");
+    const titleFile = document.createElement("a");
+    titleFile.href = `/api/message/attachment/${file.id}`;
+    titleFile.classList.add("ul");
+    titleFile.textContent = file.originalName;
+    const size = document.createElement("p");
+    size.classList.add("file-size");
+    size.textContent = formatSize(file.size);
+
+    metaDiv.appendChild(titleFile);
+    metaDiv.appendChild(size);
+    globalDiv.appendChild(ext);
+    globalDiv.appendChild(metaDiv);
+    return globalDiv;
 }
 
 function addDaySeparator(day, selector) {
@@ -195,14 +227,65 @@ function showNoMessagesElement(conversationInfos, selector) {
     selector.appendChild(globalDiv);
 }
 
+function formatSize(bytes) { return bytes < 1024 * 1024 ? Math.round(bytes / 1024) + " Ko" : (bytes / 1024 / 1024).toFixed(1).replace(".", ",") + " Mo"; }
+
+function renderPreview() {
+	attachPreview.innerHTML = "";
+	pendingFiles.forEach((file, index) => {
+		const ext = (file.name.split(".").pop() || "").slice(0, 4).toUpperCase();
+
+		const item = document.createElement("div");
+		item.className = "preview-file";
+		item.innerHTML = `
+			<span class="file-ext">${ext}</span>
+			<div class="file-meta">
+				<span class="file-name">${file.name}</span>
+				<p class="file-size">${formatSize(file.size)}</p>
+			</div>
+			<button type="button" class="remove-file-btn" aria-label="Retirer la pièce jointe">&times;</button>
+		`;
+		item.querySelector(".file-ext").textContent = ext;
+		item.querySelector(".file-name").textContent = file.name;
+		item.querySelector(".remove-file-btn").onclick = () => {
+			pendingFiles.splice(index, 1);
+			renderPreview();
+		};
+		attachPreview.appendChild(item);
+	});
+}
+
 const composerForm = document.getElementById("composer");
+const attachBtn = document.getElementById("attach-btn");
+const fileInput = document.getElementById("msg-file");
+const attachPreview = document.getElementById("attach-preview");
+
+const MAX_FILES = 5;
+const MAX_SIZE = 10 * 1024 * 1024;
+let pendingFiles = [];
+
+const MIME_LABELS = {
+    "application/pdf": "PDF",
+    "application/msword": "DOC",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document": "DOCX",
+    "application/vnd.ms-excel": "XLS",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": "XLSX",
+    "application/vnd.ms-powerpoint": "PPT",
+    "application/vnd.openxmlformats-officedocument.presentationml.presentation": "PPTX",
+    "application/zip": "ZIP",
+    "application/json": "JSON",
+    "application/javascript": "JS",
+    "text/javascript": "JS",
+    "text/plain": "TXT",
+    "text/csv": "CSV",
+    "text/html": "HTML",
+    "text/markdown": "MD"
+};
 
 let MESSAGES;
 
 document.addEventListener("DOMContentLoaded", async () => {
     const getConversations = await fetch("/api/message/get-conversation", { method: "GET" });
     const conversations = (await getConversations.json()).conversations;
-    console.log(conversations);
 
     loadConversations(conversations);
     loadUnreadMsg();
@@ -210,13 +293,14 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 composerForm.addEventListener("submit", async event => {
     event.preventDefault();
-    const dataForm = Object.fromEntries(new FormData(composerForm));
-    dataForm.conversationId = parseInt(document.getElementById("chat").getAttribute("data-id"));
+    const formData = new FormData();
+    formData.append("message", composerForm.elements.message.value);
+    formData.append("conversationId", document.getElementById("chat").getAttribute("data-id"));
+    pendingFiles.forEach(file => formData.append("files", file));
     try {
         const sendMessage = await fetch("/api/message/send", {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(dataForm)
+            body: formData
         });
         const data = await sendMessage.json();
         if (!sendMessage.ok) {
@@ -224,17 +308,28 @@ composerForm.addEventListener("submit", async event => {
             showToast(data.error, "error");
             return;
         }
-        MESSAGES.push({
-            senderId: MESSAGES[0].myId,
-            body: dataForm.message,
-            createdAt: new Date(Date.now()),
-            myId: MESSAGES[0].myId
-        });
+        MESSAGES.push(data);
         addMessage(MESSAGES[MESSAGES.length - 1], document.getElementById("chat"));
         composerForm.reset();
+        pendingFiles = [];
+        renderPreview();
         scrollToBottom(true);
     } catch (error) {
         console.error(error);
         showToast("Erreur server", "error");
     }
+});
+
+attachBtn.onclick = () => fileInput.click();
+
+fileInput.addEventListener("change", () => {
+	for (const file of fileInput.files) {
+		if (pendingFiles.length >= MAX_FILES) break;
+		if (file.size > MAX_SIZE) continue;
+		const already = pendingFiles.some(f => f.name === file.name && f.size === file.size && f.lastModified === file.lastModified);
+		if (!already) pendingFiles.push(file);
+	}
+	fileInput.value = "";
+	renderPreview();
+    console.group(pendingFiles);
 });

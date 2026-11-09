@@ -1,8 +1,19 @@
 const express = require("express");
+const fs = require("fs");
+const path = require("path");
 const prisma = require("../lib/prisma");
+const upload = require("../lib/upload");
 const { decryptMessage, encryptMessage } = require("../lib/crypto");
 
 const router = express.Router();
+
+const uploadFiles = (req, res, next) => {
+    upload.array("files", 5)(req, res, error => {
+        if (!error) return next();
+        const msg = error.code === "LIMIT_FILE_SIZE" ? "Fichier trop lourd (10 Mo maximum)" : "Fichiers invalides";
+        res.status(400).json({ error: msg });
+    });
+};
 
 router.get("/get-conversation", async (req, res) => {
     try {
@@ -93,12 +104,20 @@ router.post("/get-msg", async (req, res) => {
                 senderId: true,
                 body: true,
                 isRead: true,
+                attachments: {
+                    select: {
+                        id: true,
+                        originalName: true,
+                        mimeType: true,
+                        size: true
+                    }
+                },
                 createdAt: true
             },
             orderBy: { createdAt: "asc" }
         });
         await prisma.message.updateMany({
-            where: { conversationId: conversationId },
+            where: { conversationId: conversationId, senderId: { not: req.session.user.id } },
             data: { isRead: true }
         });
         const messages = getMessages.map(msg => ({
@@ -113,13 +132,52 @@ router.post("/get-msg", async (req, res) => {
 	}
 });
 
-router.post("/send", async (req, res) => {
+router.post("/send", uploadFiles, async (req, res) => {
+    const files = req.files || [];
+    const removeFiles = () => files.forEach(f => fs.unlink(f.path, () => {}));
     try {
-        const { message, conversationId } = req.body;
-        await prisma.message.create({
-            data: { conversationId, senderId: req.session.user.id, body: encryptMessage(message, conversationId) }
+        const userId = req.session.user.id;
+        const conversationId = parseInt(req.body.conversationId);
+        const message = (req.body.message || "").trim();
+        if (!message && files.length === 0) {
+            removeFiles();
+            return res.status(400).json({ error: "Message vide" });
+        }
+
+        const sent = await prisma.$transaction(async tx => {
+            const created = await tx.message.create({
+                data: {
+                    conversationId,
+                    senderId: userId,
+                    body: encryptMessage(message, conversationId)
+                }
+            });
+            if (files.length > 0) {
+                await tx.attachment.createMany({
+                    data: files.map(file => ({
+                        originalName: Buffer.from(file.originalname, "latin1").toString("utf8"),
+                        filename: file.filename,
+                        mimeType: file.mimetype,
+                        size: file.size,
+                        userId,
+                        messageId: created.id
+                    }))
+                });
+            }
+            return tx.message.findUnique({
+                where: { id: created.id },
+                select: {
+                    id: true,
+                    senderId: true,
+                    isRead: true,
+                    createdAt: true,
+                    attachments: {
+                        select: { id: true, originalName: true, mimeType: true, size: true }
+                    }
+                }
+            });
         });
-        res.status(201).json({ message: "Message envoyé" });
+        res.status(201).json({ ...sent, body: message, myId: userId });
     } catch (error) {
 		console.error(error);
 		res.status(500).json({ error: "Erreur serveur" });
@@ -141,6 +199,38 @@ router.get("/get-unread", async (req, res) => {
 		console.error(error);
 		res.status(500).json({ error: "Erreur serveur" });
 	}
+});
+
+router.get("/attachment/:id", async (req, res) => {
+    try {
+        if (!req.session.user) return res.status(401).json({ error: "Non connecté" });
+        const userId = req.session.user.id;
+        const id = parseInt(req.params.id);
+
+        const attachment = await prisma.attachment.findUnique({
+            where: { id },
+            include: {
+                message: {
+                    select: {
+                        conversation: { select: { tutorId: true, studentId: true } }
+                    }
+                }
+            }
+        });
+
+        if (!attachment || !attachment.message) return res.status(404).json({ error: "Fichier introuvable" });
+
+        const { tutorId, studentId } = attachment.message.conversation;
+        if (userId !== tutorId && userId !== studentId) return res.status(403).json({ error: "Accès refusé" });
+
+        const filePath = path.join(__dirname, "../uploads/messages", path.basename(attachment.filename));
+        res.download(filePath, attachment.originalName, error => {
+            if (error && !res.headersSent) res.status(404).json({ error: "Fichier introuvable sur le serveur" });
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Erreur serveur" });
+    }
 });
 
 module.exports = router;

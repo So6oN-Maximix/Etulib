@@ -78,24 +78,22 @@
 			<p class="thread-note" hidden>En tant que parent, vous voyez les échanges de Léa avec son professeur.</p>
 
 			<div class="chat" id="chat" aria-live="polite">
-				<div class="system-event">
-					<span>Cours de <b>Mathématiques</b> réservé pour le <b>Mercredi 4 novembre 2026 à 17 h 30</b></span>
+				<div class="chat-empty" id="chat-select">
+					<span class="chat-empty-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1.1-4.6A8 8 0 1 1 21 12z"/></svg></span>
+					<p><b>Sélectionnez une conversation</b></p>
+					<p>Cliquez sur une conversation à gauche pour afficher vos messages.</p>
 				</div>
-				<p class="day-sep">Mardi 3 novembre</p>
-				<div class="msg in">
-					Bonjour, je vous ai déposé les exercices pour mercredi.
-					<div class="msg-file"><span class="file-ext">PDF</span><a href="#" class="ul">Exercices_fonctions_affines.pdf</a></div>
-					<time>17:20</time>
-				</div>
-				<div class="msg out">Merci, nous les regardons ce soir.<time>17:35</time></div>
-				<div class="msg in">Parfait. N'hésitez pas à noter vos questions avant la séance.<time>17:42</time></div>
 			</div>
 
 			<form class="composer" id="composer">
-				<button type="button" class="btn-line" id="attach-btn">Joindre</button>
-				<input type="file" id="msg-file" hidden>
-				<textarea name="message" rows="1" placeholder="Écrire un message…" aria-label="Votre message"></textarea>
-				<button type="submit" class="btn-search">Envoyer</button>
+				<div id="attach-preview" class="attachment-preview"></div>
+    
+				<div class="composer-inputs">
+					<button type="button" class="btn-line" id="attach-btn">Joindre</button>
+					<input type="file" id="msg-file" multiple hidden>
+					<textarea name="message" rows="1" placeholder="Écrire un message…" aria-label="Votre message"></textarea>
+					<button type="submit" class="btn-search">Envoyer</button>
+				</div>
 			</form>
 		</section>
 	</div>
