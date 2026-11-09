@@ -36,7 +36,7 @@ app.use("/api/message", require("./routes/message"));
 
 app.get("/", (req, res) => res.sendFile(path.join(root, "index.html")));
 
-const protectedPages = { student_profil: ["STUDENT", "PARENT"], parent_profil: ["PARENT"], tutor_profil: ["TUTOR"] };
+const protectedPages = { student_profil: ["STUDENT", "PARENT"], parent_profil: ["PARENT"], tutor_profil: ["TUTOR"], messages: ["TUTOR", "PARENT", "STUDENT"] };
 app.get("/:page", (req, res) => {
 	const allowed = protectedPages[req.params.page];
 	if (allowed && !allowed.includes(req.session.user?.role)) return res.redirect("/");

@@ -15,8 +15,44 @@ const uploadFiles = (req, res, next) => {
     });
 };
 
+async function getConversationAccess(user, conversationId) {
+    const conversation = await prisma.conversation.findUnique({ where: { id: conversationId } });
+    if (!conversation) return null;
+    if (user.id === conversation.tutorId || user.id === conversation.studentId) {
+        return { conversation, readOnly: false };
+    }
+    if (user.role === "PARENT") {
+        const child = await prisma.studentProfile.findFirst({
+            where: { userId: conversation.studentId, parent: { userId: user.id } },
+            select: { id: true }
+        });
+        if (child) return { conversation, readOnly: true };
+    }
+    return null;
+}
+
 router.get("/get-conversation", async (req, res) => {
     try {
+        if (req.session.user.role === "PARENT") {
+            const children = await prisma.user.findMany({
+                where: { student: { parent: { userId: req.session.user.id } } },
+                select: { id: true, firstName: true }
+            });
+            const childConversations = await prisma.conversation.findMany({
+                where: { studentId: { in: children.map(child => child.id) } },
+                select: { id: true, tutorId: true, studentId: true }
+            });
+            const names = Object.fromEntries(children.map(child => [child.id, child.firstName]));
+            return res.status(200).json({
+                conversations: childConversations.map(conv => ({
+                    id: conv.id,
+                    userId: conv.tutorId,
+                    childName: names[conv.studentId],
+                    readOnly: true
+                }))
+            });
+        }
+
         let whereCondition;
         let selectIds;
         if (req.session.user.role === "TUTOR") {
@@ -67,12 +103,11 @@ router.get("/get-conv-infos", async (req, res) => {
 router.get("/get-new-msg", async (req, res) => {
     try {
         const conversationId = parseInt(req.query.id);
-        const newMsgCount = await prisma.message.count({
-            where: {
-                conversationId: conversationId,
-                senderId: { not: req.session.user.id },
-                isRead: false
-            }
+        const access = await getConversationAccess(req.session.user, conversationId);
+        if (!access) return res.status(403).json({ error: "Conversation introuvable" });
+
+        const newMsgCount = access.readOnly ? 0 : await prisma.message.count({
+            where: { conversationId, senderId: { not: req.session.user.id }, isRead: false }
         });
         const lastMsg = await prisma.message.findFirst({
             where: { conversationId: conversationId },
@@ -83,6 +118,8 @@ router.get("/get-new-msg", async (req, res) => {
                 createdAt: true
             }
         });
+        if (!lastMsg) return res.status(200).json({ count: 0, body: "" });
+
         const prefix = lastMsg.senderId === req.session.user.id ? "Vous: " : "";
         res.status(200).json({
             count: newMsgCount,
@@ -98,6 +135,10 @@ router.get("/get-new-msg", async (req, res) => {
 router.post("/get-msg", async (req, res) => {
     try {
         const conversationId = parseInt(req.body.conversationId);
+        const access = await getConversationAccess(req.session.user, conversationId);
+        if (!access) return res.status(403).json({ error: "Conversation introuvable" });
+        const { readOnly, conversation } = access;
+
         const getMessages = await prisma.message.findMany({
             where: { conversationId: conversationId },
             select: {
@@ -116,16 +157,18 @@ router.post("/get-msg", async (req, res) => {
             },
             orderBy: { createdAt: "asc" }
         });
-        await prisma.message.updateMany({
-            where: { conversationId: conversationId, senderId: { not: req.session.user.id } },
-            data: { isRead: true }
-        });
+        if (!readOnly) {
+            await prisma.message.updateMany({
+                where: { conversationId: conversationId, senderId: { not: req.session.user.id } },
+                data: { isRead: true }
+            });
+        }
         const messages = getMessages.map(msg => ({
             ...msg,
             body: decryptMessage(msg.body, conversationId),
-            myId: req.session.user.id
+            myId: readOnly ? conversation.studentId : req.session.user.id
         }));
-        res.status(200).json({ messages });
+        res.status(200).json({ messages, readOnly });
     } catch (error) {
 		console.error(error);
 		res.status(500).json({ error: "Erreur serveur" });
@@ -213,15 +256,16 @@ router.get("/attachment/:id", async (req, res) => {
                 message: {
                     select: {
                         conversation: { select: { tutorId: true, studentId: true } }
-                    }
+                    },
+                    conversationId: true
                 }
             }
         });
 
         if (!attachment || !attachment.message) return res.status(404).json({ error: "Fichier introuvable" });
 
-        const { tutorId, studentId } = attachment.message.conversation;
-        if (userId !== tutorId && userId !== studentId) return res.status(403).json({ error: "Accès refusé" });
+        const access = await getConversationAccess(req.session.user, attachment.message.conversationId);
+        if (!access) return res.status(403).json({ error: "Accès refusé" });
 
         const filePath = path.join(__dirname, "../uploads/messages", path.basename(attachment.filename));
         res.download(filePath, attachment.originalName, error => {

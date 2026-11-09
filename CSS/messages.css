@@ -149,3 +149,5 @@ body.messages-page{display:flex;flex-direction:column;height:100vh;height:100dvh
 .chat-empty-icon{display:grid;place-items:center;width:56px;height:56px;margin:0 auto .8rem;border:1.5px dashed var(--ink);border-radius:50%;color:var(--ink)}
 
 .chat-empty-icon svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
+
+.thread.read-only .composer{display:none}

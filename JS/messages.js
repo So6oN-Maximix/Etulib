@@ -8,7 +8,7 @@ async function loadConversations(conversations) {
             const conversationInfos = (await getConversationInfos.json()).conversationInfos;
             const getNewMsgNum = await fetch(`/api/message/get-new-msg?id=${conversation.id}`, { method: "GET" });
             const newMsgNum = await getNewMsgNum.json();
-            addConversation(conversation.id, conversationInfos, newMsgNum, conversationAside.querySelector(".threads"));
+            addConversation(conversation, conversationInfos, newMsgNum, conversationAside.querySelector(".threads"));
         }
     } catch (error) { console.error(error) }
 }
@@ -44,7 +44,7 @@ function formatMsgDate(dateInput) {
     });
 }
 
-function addConversation(conversationId, conversationInfos, newMsgCount, selector) {
+function addConversation(conversation, conversationInfos, newMsgCount, selector) {
     const globalPoint = document.createElement("li");
 
     const globalLink = document.createElement("a");
@@ -55,6 +55,7 @@ function addConversation(conversationId, conversationInfos, newMsgCount, selecto
     const name = document.createElement("span");
     name.classList.add("t-name");
     name.textContent = `${conversationInfos.firstName} ${conversationInfos.lastName.toUpperCase()}`;
+    if (conversation.childName) name.innerHTML += `<small> · ${conversation.childName}</small>`;
     const time = document.createElement("span");
     time.classList.add("t-time");
     time.textContent = formatMsgDate(new Date(newMsgCount.createdAt));
@@ -79,8 +80,9 @@ function addConversation(conversationId, conversationInfos, newMsgCount, selecto
             if (allMsgUnread.textContent === "0") allMsgUnread.remove();
         }
 
+        composerForm.hidden = false;
         updateHeader(conversationInfos);
-        loadMessages(conversationId, conversationInfos);
+        loadMessages(conversation, conversationInfos);
     };
 
     globalLink.appendChild(avatar);
@@ -108,17 +110,24 @@ function updateHeader(conversationInfos) {
     if (conversationInfos.role === "TUTOR") avatarSection.querySelector("a").href = `/tutor?id=${conversationInfos.tutor.id}`;
 }
 
-async function loadMessages(conversationId, conversationInfos) {
+async function loadMessages(conversation, conversationInfos) {
     try {
         const findMessages = await fetch("/api/message/get-msg", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ conversationId: conversationId })
+            body: JSON.stringify({ conversationId: conversation.id })
         });
-        MESSAGES = (await findMessages.json()).messages;
+        const result = await findMessages.json();
+        MESSAGES = result.messages;
+
+        const thread = document.getElementById("messages");
+        thread.classList.toggle("read-only", Boolean(result.readOnly));
+        const note = thread.querySelector(".thread-note");
+        note.hidden = !result.readOnly;
+        if (result.readOnly) note.textContent = `En tant que parent, vous voyez les échanges de ${conversation.childName} avec son professeur.`;
 
         const chatElement = document.getElementById("chat");
-        chatElement.setAttribute("data-id", conversationId);
+        chatElement.setAttribute("data-id", conversation.id);
         chatElement.innerHTML = "";
         if (MESSAGES.length > 0) MESSAGES.forEach(message => addMessage(message, chatElement));
         else showNoMessagesElement(conversationInfos, chatElement);
