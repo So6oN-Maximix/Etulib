@@ -93,6 +93,7 @@ Les tests unitaires (`server/tests/crypto.test.js`) vérifient notamment le chif
 ```bash
 cd server
 npm test
+```
 
 ## Base de données
 
