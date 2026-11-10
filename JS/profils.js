@@ -1,13 +1,3 @@
-function showToast(message, type = "ok") {
-	const toast = document.createElement("div");
-	toast.className = "toast" + (type === "error" ? " error" : "");
-	toast.textContent = message;
-	const close = () => { toast.classList.add("leaving"); setTimeout(() => toast.remove(), 250); };
-	toast.addEventListener("click", close);
-	document.getElementById("toasts").appendChild(toast);
-	setTimeout(close, 3500);
-}
-
 function initScrollSpy() {
 	const items = [...document.querySelectorAll('.side-nav a[href^="#"]')]
 		.filter(a => a.hash.length > 1)

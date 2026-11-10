@@ -1,5 +1,7 @@
 const express = require("express");
+const path = require("path");
 const prisma = require("../lib/prisma");
+const upload = require("../lib/upload");
 const requireAuth = require("../middleware/requireAuth");
 const requireChildren = require("../middleware/requireChildren");
 const { encryptMessage } = require("../lib/crypto");
@@ -23,6 +25,32 @@ function formatTime(dateInput) {
     const minutes = String(date.getMinutes()).padStart(2, '0');
     return `${hours}h${minutes}`;
 }
+
+async function getLessonAccess(user, lessonId) {
+    if (!user || !Number.isInteger(lessonId)) return null;
+    return prisma.lesson.findFirst({
+        where: {
+            id: lessonId,
+            OR: [
+                { tutor: { userId: user.id } },
+                { student: { userId: user.id } },
+                { student: { parent: { userId: user.id } } }
+            ]
+        },
+        select: { id: true }
+    });
+}
+
+const uploadLessonFile = (req, res, next) => {
+    upload.lessons.single("file")(req, res, error => {
+        if (!error) return next();
+        const messages = {
+            LIMIT_FILE_SIZE: "Fichier trop lourd (10 Mo maximum)",
+            INVALID_TYPE: "Format non accepté (PDF, images ou documents Word)"
+        };
+        res.status(400).json({ error: messages[error.code] || "Fichier invalide" });
+    });
+};
 
 router.post("/reserve", requireAuth(["STUDENT", "PARENT"]), async (req, res) => {
     try {
@@ -144,6 +172,7 @@ router.post("/get-info", async (req, res) => {
     try {
         let { id } = req.body;
         if (typeof id !== "number") id = parseInt(id);
+        if (!await getLessonAccess(req.session.user, id)) return res.status(403).json({ error: "Accès refusé" });
         const lessonInfo = await prisma.lesson.findUnique({
             where: { id: id },
             select: {
@@ -185,6 +214,62 @@ router.post("/get-info", async (req, res) => {
         });
         lessonInfo.connectedRole = req.session.user.role;
         res.status(200).json({ lessonInfo });
+    } catch (error) {
+		console.error(error);
+		res.status(500).json({ error: "Erreur serveur" });
+	}
+});
+
+router.get("/get-files", async (req, res) => {
+    try {
+        const lessonId = parseInt(req.query.id);
+        if (!await getLessonAccess(req.session.user, lessonId)) return res.status(403).json({ error: "Accès refusé" });
+
+        const attachments = await prisma.attachment.findMany({
+            where: { lessonId },
+            orderBy: { createdAt: "asc" },
+            select: {
+                id: true,
+                originalName: true,
+                mimeType: true,
+                size: true,
+                createdAt: true,
+                userId: true,
+                user: { select: { firstName: true } }
+            }
+        });
+        const files = attachments.map(({ userId, ...file }) => ({ ...file, mine: userId === req.session.user.id }));
+        res.status(200).json({ files });
+    } catch (error) {
+		console.error(error);
+		res.status(500).json({ error: "Erreur serveur" });
+	}
+});
+
+router.post("/save-file", uploadLessonFile, async (req, res) => {
+    try {
+        const file = req.file;
+        const attachment = await prisma.attachment.create({
+            data: {
+                originalName: Buffer.from(file.originalname, "latin1").toString("utf8"),
+                filename: file.filename,
+                mimeType: file.mimetype,
+                size: file.size,
+                userId: req.session.user.id,
+                lessonId: parseInt(req.query.id)
+            },
+            select: {
+                id: true,
+                originalName: true,
+                mimeType: true,
+                size: true,
+                createdAt: true,
+                userId: true,
+                user: { select: { firstName: true } }
+            }
+        });
+        attachment.mine = true;
+        res.status(201).json(attachment);
     } catch (error) {
 		console.error(error);
 		res.status(500).json({ error: "Erreur serveur" });

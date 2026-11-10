@@ -1,3 +1,13 @@
+function showToast(message, type = "ok") {
+	const toast = document.createElement("div");
+	toast.className = "toast" + (type === "error" ? " error" : "");
+	toast.textContent = message;
+	const close = () => { toast.classList.add("leaving"); setTimeout(() => toast.remove(), 250); };
+	toast.addEventListener("click", close);
+	document.getElementById("toasts").appendChild(toast);
+	setTimeout(close, 3500);
+}
+
 function formatHours(minutes) { return `${Math.floor(minutes / 60).toString().padStart(2, "0")}:${(minutes % 60).toString().padStart(2, "0")}`; }
 function formatDuration(minutes) {
 	if (minutes < 60) return `${minutes} min`;

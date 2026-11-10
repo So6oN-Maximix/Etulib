@@ -253,8 +253,6 @@ function renderPreview() {
 			</div>
 			<button type="button" class="remove-file-btn" aria-label="Retirer la pièce jointe">&times;</button>
 		`;
-		item.querySelector(".file-ext").textContent = ext;
-		item.querySelector(".file-name").textContent = file.name;
 		item.querySelector(".remove-file-btn").onclick = () => {
 			pendingFiles.splice(index, 1);
 			renderPreview();
@@ -268,7 +266,6 @@ const attachBtn = document.getElementById("attach-btn");
 const fileInput = document.getElementById("msg-file");
 const attachPreview = document.getElementById("attach-preview");
 
-const MAX_FILES = 5;
 const MAX_SIZE = 10 * 1024 * 1024;
 let pendingFiles = [];
 
@@ -333,12 +330,10 @@ attachBtn.onclick = () => fileInput.click();
 
 fileInput.addEventListener("change", () => {
 	for (const file of fileInput.files) {
-		if (pendingFiles.length >= MAX_FILES) break;
 		if (file.size > MAX_SIZE) continue;
 		const already = pendingFiles.some(f => f.name === file.name && f.size === file.size && f.lastModified === file.lastModified);
 		if (!already) pendingFiles.push(file);
 	}
 	fileInput.value = "";
 	renderPreview();
-    console.group(pendingFiles);
 });

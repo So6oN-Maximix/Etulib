@@ -56,43 +56,11 @@
 				<label class="dropzone" id="dropzone">
 					<strong>Déposer un document</strong>
 					<span>Glissez un fichier ici ou cliquez pour parcourir</span>
-					<input type="file" id="doc-input" name="document" accept=".pdf,.png,.jpg,.jpeg,.doc,.docx">
+					<input type="file" id="doc-input" name="document" accept=".pdf,.png,.jpg,.jpeg,.doc,.docx" multiple>
 				</label>
 				<p class="form-msg" id="doc-msg" role="alert" hidden></p>
 
-				<ul class="courses docs" id="docs-list">
-					<li>
-						<span class="file-ext">PDF</span>
-						<div class="who"><h3>Exercices_fonctions_affines.pdf</h3><p>Reçu de Camille M. le 2 novembre · 1,2 Mo</p></div>
-						<div class="course-actions">
-							<a href="#" class="btn-line">Télécharger</a>
-							<span class="btn-trash-placeholder" aria-hidden="true"></span>
-						</div>
-					</li>
-					<li>
-						<span class="file-ext">JPG</span>
-						<div class="who"><h3>Correction_exercice_4.jpg</h3><p>Envoyé par vous le 3 novembre · 840 Ko</p></div>
-						<div class="course-actions">
-							<a href="#" class="btn-line">Télécharger</a>
-							<button type="button" class="btn-trash" aria-label="Supprimer le document" title="Supprimer">
-								<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-									<polyline points="3 6 5 6 21 6"></polyline>
-									<path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-									<line x1="10" y1="11" x2="10" y2="17"></line>
-									<line x1="14" y1="11" x2="14" y2="17"></line>
-								</svg>
-							</button>
-						</div>
-					</li>
-					<li>
-						<span class="file-ext">DOC</span>
-						<div class="who"><h3>Plan_de_revisions.docx</h3><p>Reçu de Camille M. le 3 novembre · 56 Ko</p></div>
-						<div class="course-actions">
-							<a href="#" class="btn-line">Télécharger</a>
-							<span class="btn-trash-placeholder" aria-hidden="true"></span>
-						</div>
-					</li>
-				</ul>
+				<ul class="courses docs" id="docs-list"></ul>
 				<p class="empty" id="no-docs" hidden>Aucun document pour le moment. Déposez le premier ci-dessus.</p>
 			</section>
 
@@ -135,5 +103,6 @@
 	</div>
 </main>
 <footer class="site-footer"><div class="container copy" style="border:0;margin:0">&copy; 2026 Etulib. Tous droits réservés.</div></footer>
+<div class="toasts" id="toasts" role="status" aria-live="polite"></div>
 </body>
 </html>
